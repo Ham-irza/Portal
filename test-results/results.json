@@ -1,0 +1,531 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\playwright.config.ts",
+    "rootDir": "C:/Users/Hamza/Downloads/hainan-builder-portal/code/hainan-builder-portal/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "test-results"
+        }
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/Hamza/Downloads/hainan-builder-portal/code/hainan-builder-portal/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/Hamza/Downloads/hainan-builder-portal/code/hainan-builder-portal/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.57.0",
+    "workers": 1,
+    "webServer": {
+      "command": "pnpm dev",
+      "url": "http://localhost:5173",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "01-auth.spec.ts",
+      "file": "01-auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Authentication Flows",
+          "file": "01-auth.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should register a new partner",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13490,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-06T18:14:13.890Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "791b3c4e0869e77b2651-0c0c17f155d72827ece2",
+              "file": "01-auth.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "should login with valid credentials",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 14243,
+                      "error": {
+                        "message": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials",
+                        "stack": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials\n    at login (C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts:167:15)\n    at C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\e2e\\01-auth.spec.ts:34:5",
+                        "location": {
+                          "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                          "column": 15,
+                          "line": 167
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39m..\\helpers.ts:167\n\n\u001b[0m \u001b[90m 165 |\u001b[39m       }\n \u001b[90m 166 |\u001b[39m       \u001b[36mif\u001b[39m (errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'No active account'\u001b[39m) \u001b[33m||\u001b[39m errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'not found'\u001b[39m)) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 167 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 168 |\u001b[39m           \u001b[32m`❌ User not found or inactive: ${email}\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 169 |\u001b[39m           \u001b[32m`Solution: Run: cd backend && python manage.py create_test_users\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 170 |\u001b[39m           \u001b[32m`Full error: ${errorText}`\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                            "column": 15,
+                            "line": 167
+                          },
+                          "message": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials\n\n\u001b[90m   at \u001b[39m..\\helpers.ts:167\n\n\u001b[0m \u001b[90m 165 |\u001b[39m       }\n \u001b[90m 166 |\u001b[39m       \u001b[36mif\u001b[39m (errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'No active account'\u001b[39m) \u001b[33m||\u001b[39m errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'not found'\u001b[39m)) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 167 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 168 |\u001b[39m           \u001b[32m`❌ User not found or inactive: ${email}\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 169 |\u001b[39m           \u001b[32m`Solution: Run: cd backend && python manage.py create_test_users\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 170 |\u001b[39m           \u001b[32m`Full error: ${errorText}`\u001b[39m\u001b[0m\n\u001b[2m    at login (C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts:167:15)\u001b[22m\n\u001b[2m    at C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\e2e\\01-auth.spec.ts:34:5\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-06T18:14:28.623Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flo-db22d-ogin-with-valid-credentials-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flo-db22d-ogin-with-valid-credentials-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flo-db22d-ogin-with-valid-credentials-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                        "column": 15,
+                        "line": 167
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "791b3c4e0869e77b2651-57ccc7ac59c39ba52ec9",
+              "file": "01-auth.spec.ts",
+              "line": 32,
+              "column": 3
+            },
+            {
+              "title": "should reject login with invalid email",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5424,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-06T18:14:51.207Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "791b3c4e0869e77b2651-84769581efcdd15a3375",
+              "file": "01-auth.spec.ts",
+              "line": 43,
+              "column": 3
+            },
+            {
+              "title": "should reject login with invalid password",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4693,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-06T18:14:57.261Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "791b3c4e0869e77b2651-1f461dc7fbe8f2c3a43c",
+              "file": "01-auth.spec.ts",
+              "line": 58,
+              "column": 3
+            },
+            {
+              "title": "should logout successfully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 13873,
+                      "error": {
+                        "message": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials",
+                        "stack": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials\n    at login (C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts:167:15)\n    at C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\e2e\\01-auth.spec.ts:75:5",
+                        "location": {
+                          "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                          "column": 15,
+                          "line": 167
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39m..\\helpers.ts:167\n\n\u001b[0m \u001b[90m 165 |\u001b[39m       }\n \u001b[90m 166 |\u001b[39m       \u001b[36mif\u001b[39m (errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'No active account'\u001b[39m) \u001b[33m||\u001b[39m errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'not found'\u001b[39m)) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 167 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 168 |\u001b[39m           \u001b[32m`❌ User not found or inactive: ${email}\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 169 |\u001b[39m           \u001b[32m`Solution: Run: cd backend && python manage.py create_test_users\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 170 |\u001b[39m           \u001b[32m`Full error: ${errorText}`\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                            "column": 15,
+                            "line": 167
+                          },
+                          "message": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials\n\n\u001b[90m   at \u001b[39m..\\helpers.ts:167\n\n\u001b[0m \u001b[90m 165 |\u001b[39m       }\n \u001b[90m 166 |\u001b[39m       \u001b[36mif\u001b[39m (errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'No active account'\u001b[39m) \u001b[33m||\u001b[39m errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'not found'\u001b[39m)) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 167 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 168 |\u001b[39m           \u001b[32m`❌ User not found or inactive: ${email}\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 169 |\u001b[39m           \u001b[32m`Solution: Run: cd backend && python manage.py create_test_users\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 170 |\u001b[39m           \u001b[32m`Full error: ${errorText}`\u001b[39m\u001b[0m\n\u001b[2m    at login (C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts:167:15)\u001b[22m\n\u001b[2m    at C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\e2e\\01-auth.spec.ts:75:5\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-06T18:15:02.012Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flows-should-logout-successfully-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flows-should-logout-successfully-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flows-should-logout-successfully-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                        "column": 15,
+                        "line": 167
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "791b3c4e0869e77b2651-499c12bc98ac4aa80972",
+              "file": "01-auth.spec.ts",
+              "line": 73,
+              "column": 3
+            },
+            {
+              "title": "should prevent access to dashboard when not logged in",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6350,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-06T18:15:19.717Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "791b3c4e0869e77b2651-5eb78d62bdbe44c409dc",
+              "file": "01-auth.spec.ts",
+              "line": 92,
+              "column": 3
+            },
+            {
+              "title": "should have access token after login",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 19859,
+                      "error": {
+                        "message": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials",
+                        "stack": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials\n    at login (C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts:167:15)\n    at C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\e2e\\01-auth.spec.ts:101:5",
+                        "location": {
+                          "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                          "column": 15,
+                          "line": 167
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39m..\\helpers.ts:167\n\n\u001b[0m \u001b[90m 165 |\u001b[39m       }\n \u001b[90m 166 |\u001b[39m       \u001b[36mif\u001b[39m (errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'No active account'\u001b[39m) \u001b[33m||\u001b[39m errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'not found'\u001b[39m)) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 167 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 168 |\u001b[39m           \u001b[32m`❌ User not found or inactive: ${email}\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 169 |\u001b[39m           \u001b[32m`Solution: Run: cd backend && python manage.py create_test_users\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 170 |\u001b[39m           \u001b[32m`Full error: ${errorText}`\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                            "column": 15,
+                            "line": 167
+                          },
+                          "message": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials\n\n\u001b[90m   at \u001b[39m..\\helpers.ts:167\n\n\u001b[0m \u001b[90m 165 |\u001b[39m       }\n \u001b[90m 166 |\u001b[39m       \u001b[36mif\u001b[39m (errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'No active account'\u001b[39m) \u001b[33m||\u001b[39m errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'not found'\u001b[39m)) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 167 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 168 |\u001b[39m           \u001b[32m`❌ User not found or inactive: ${email}\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 169 |\u001b[39m           \u001b[32m`Solution: Run: cd backend && python manage.py create_test_users\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 170 |\u001b[39m           \u001b[32m`Full error: ${errorText}`\u001b[39m\u001b[0m\n\u001b[2m    at login (C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts:167:15)\u001b[22m\n\u001b[2m    at C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\e2e\\01-auth.spec.ts:101:5\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-06T18:15:26.589Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flo-9763b-ve-access-token-after-login-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flo-9763b-ve-access-token-after-login-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flo-9763b-ve-access-token-after-login-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                        "column": 15,
+                        "line": 167
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "791b3c4e0869e77b2651-020c253041a1a3bfdad9",
+              "file": "01-auth.spec.ts",
+              "line": 100,
+              "column": 3
+            },
+            {
+              "title": "should allow access to applications after login",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 17575,
+                      "error": {
+                        "message": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials",
+                        "stack": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials\n    at login (C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts:167:15)\n    at C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\e2e\\01-auth.spec.ts:110:5",
+                        "location": {
+                          "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                          "column": 15,
+                          "line": 167
+                        },
+                        "snippet": "\u001b[90m   at \u001b[39m..\\helpers.ts:167\n\n\u001b[0m \u001b[90m 165 |\u001b[39m       }\n \u001b[90m 166 |\u001b[39m       \u001b[36mif\u001b[39m (errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'No active account'\u001b[39m) \u001b[33m||\u001b[39m errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'not found'\u001b[39m)) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 167 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 168 |\u001b[39m           \u001b[32m`❌ User not found or inactive: ${email}\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 169 |\u001b[39m           \u001b[32m`Solution: Run: cd backend && python manage.py create_test_users\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 170 |\u001b[39m           \u001b[32m`Full error: ${errorText}`\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                            "column": 15,
+                            "line": 167
+                          },
+                          "message": "Error: ❌ User not found or inactive: partner@hainanbuilder.com\nSolution: Run: cd backend && python manage.py create_test_users\nFull error: No active account found with the given credentials\n\n\u001b[90m   at \u001b[39m..\\helpers.ts:167\n\n\u001b[0m \u001b[90m 165 |\u001b[39m       }\n \u001b[90m 166 |\u001b[39m       \u001b[36mif\u001b[39m (errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'No active account'\u001b[39m) \u001b[33m||\u001b[39m errorText\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mincludes(\u001b[32m'not found'\u001b[39m)) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 167 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m     |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 168 |\u001b[39m           \u001b[32m`❌ User not found or inactive: ${email}\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 169 |\u001b[39m           \u001b[32m`Solution: Run: cd backend && python manage.py create_test_users\\n`\u001b[39m \u001b[33m+\u001b[39m\n \u001b[90m 170 |\u001b[39m           \u001b[32m`Full error: ${errorText}`\u001b[39m\u001b[0m\n\u001b[2m    at login (C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts:167:15)\u001b[22m\n\u001b[2m    at C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\e2e\\01-auth.spec.ts:110:5\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-06T18:15:49.662Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flo-3b719-to-applications-after-login-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flo-3b719-to-applications-after-login-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\test-results\\01-auth-Authentication-Flo-3b719-to-applications-after-login-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Hamza\\Downloads\\hainan-builder-portal\\code\\hainan-builder-portal\\tests\\helpers.ts",
+                        "column": 15,
+                        "line": 167
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "791b3c4e0869e77b2651-c1cd918304f11e1d494e",
+              "file": "01-auth.spec.ts",
+              "line": 109,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-02-06T18:14:04.704Z",
+    "duration": 125061.856,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}
