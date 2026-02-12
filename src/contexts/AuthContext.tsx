@@ -22,6 +22,8 @@ export interface Profile {
 interface User {
   id: number;
   email: string;
+  first_name?: string; // Added to fix TS2339
+  is_active?: boolean; // Added to fix TS2339
   is_staff: boolean;
   is_superuser: boolean;
   partner?: {
@@ -73,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         department: null,
         specialization: null,
         max_workload: null,
-        is_active: meData.partner ? meData.partner.status === 'active' : meData.is_active,
+        is_active: meData.partner ? meData.partner.status === 'active' : (meData.is_active ?? true),
         created_at: '',
         updated_at: '',
       };

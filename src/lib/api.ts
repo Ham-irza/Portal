@@ -206,6 +206,8 @@ class ApiClient {
   async getMe(): Promise<{
     id: number;
     email: string;
+    first_name?: string;  // Added
+    is_active?: boolean;  // Added
     is_staff: boolean;
     is_superuser: boolean;
     partner?: {
