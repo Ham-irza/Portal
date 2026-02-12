@@ -177,6 +177,17 @@ class ApiClient {
     });
   }
 
+  async registerApplicant(data: {
+    email: string;
+    password: string;
+    full_name?: string;
+  }): Promise<{ detail: string }> {
+    return this.request('/api/auth/register/applicant/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   async login(email: string, password: string): Promise<{
     access: string;
     refresh: string;
@@ -324,6 +335,20 @@ class ApiClient {
     return this.request(`/api/documents/${id}/`, {
       method: 'DELETE',
     });
+  }
+
+  // Service Types / Document Requirements
+  async getServiceTypes(): Promise<any[]> {
+    const data = await this.request('/api/documents/service-types/');
+    return Array.isArray(data) ? data : ((data as any)?.results || []);
+  }
+
+  async getDocumentRequirements(serviceKey?: string): Promise<any[]> {
+    const url = serviceKey
+      ? `/api/documents/document-requirements/?service__key=${serviceKey}`
+      : '/api/documents/document-requirements/';
+    const data = await this.request(url);
+    return Array.isArray(data) ? data : ((data as any)?.results || []);
   }
 
   // Payments

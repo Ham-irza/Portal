@@ -56,7 +56,21 @@ interface Payment {
   notes?: string;
   created_at: string;
 }
+interface ServiceType {
+  id: number;
+  key: string;
+  name: string;
+  description?: string;
+}
 
+interface DocumentRequirement {
+  id: number;
+  service: number;
+  service_key?: string;
+  service_name?: string;
+  document_name: string;
+  is_optional: boolean;
+}
 export default function ApplicationDetail() {
   const { id } = useParams();
   const { user, profile } = useAuth();
@@ -76,18 +90,28 @@ export default function ApplicationDetail() {
   const [extraDataEdit, setExtraDataEdit] = useState<Record<string, string>>({});
   const [newFieldKey, setNewFieldKey] = useState('');
   const [newFieldValue, setNewFieldValue] = useState('');
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [documentRequirements, setDocumentRequirements] = useState<DocumentRequirement[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const isAdmin = profile?.role === 'admin' || profile?.role === 'team_member';
+
+  // Get document requirements for the applicant's visa type
+  const visaTypeKey = app?.visa_type?.toLowerCase().replace(/\s+/g, '_') || '';
+  const applicantDocRequirements = documentRequirements.filter(
+    (req) => req.service_key === visaTypeKey || req.service_name?.toLowerCase() === app?.visa_type?.toLowerCase()
+  );
 
   const fetchData = useCallback(async () => {
     if (!id) return;
     try {
       const applicantId = parseInt(id);
-      const [appData, docsData, payData] = await Promise.all([
+      const [appData, docsData, payData, servicesData, reqsData] = await Promise.all([
         api.getApplicant(applicantId),
         api.getDocuments(applicantId),
         api.getPayments(applicantId),
+        api.getServiceTypes().catch(() => []),
+        api.getDocumentRequirements().catch(() => []),
       ]);
       setApp(appData);
 
@@ -99,6 +123,8 @@ export default function ApplicationDetail() {
 
       setDocuments(normalizedDocs);
       setPayments(normalizedPayments);
+      setServiceTypes(Array.isArray(servicesData) ? servicesData : ((servicesData as any)?.results || []));
+      setDocumentRequirements(Array.isArray(reqsData) ? reqsData : ((reqsData as any)?.results || []));
 
       // Messages and status history not available in backend yet
       setMessages([]);
@@ -504,6 +530,75 @@ export default function ApplicationDetail() {
               )}
             </div>
           ) : null}
+
+          {/* Document Requirements Section */}
+          {applicantDocRequirements.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="h-5 w-5 text-blue-500" />
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Required Documents for {app?.visa_type || 'This Visa'}
+                </h3>
+              </div>
+              <div className="space-y-2">
+                {applicantDocRequirements.map((req) => {
+                  const uploadedDocs = documents.filter(
+                    (doc) => doc.document_type.toLowerCase().includes(req.document_name.toLowerCase())
+                  );
+                  const hasApproved = uploadedDocs.some((d) => d.status === 'approved');
+                  const hasUploaded = uploadedDocs.length > 0;
+
+                  return (
+                    <div
+                      key={req.id}
+                      className={`flex items-center justify-between p-3 rounded-lg border transition ${
+                        hasApproved
+                          ? 'border-green-200 bg-green-50'
+                          : hasUploaded
+                          ? 'border-blue-200 bg-blue-50'
+                          : req.is_optional
+                          ? 'border-gray-200 bg-gray-50'
+                          : 'border-yellow-200 bg-yellow-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        {hasApproved ? (
+                          <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                        ) : hasUploaded ? (
+                          <Clock className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                        ) : req.is_optional ? (
+                          <AlertCircle className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                        ) : (
+                          <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0" />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-gray-900">
+                            {req.document_name}
+                            {req.is_optional && (
+                              <span className="text-xs font-normal text-gray-500 ml-2">(Optional)</span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap ml-2 ${
+                          hasApproved
+                            ? 'bg-green-100 text-green-700'
+                            : hasUploaded
+                            ? 'bg-blue-100 text-blue-700'
+                            : req.is_optional
+                            ? 'bg-gray-100 text-gray-600'
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}
+                      >
+                        {hasApproved ? 'Approved' : hasUploaded ? 'Uploaded' : req.is_optional ? 'Optional' : 'Pending'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Progress Timeline */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

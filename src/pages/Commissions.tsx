@@ -71,6 +71,84 @@ export default function Commissions() {
     { tier: 'Platinum', type: 'tiered', base_rate: 12, bonus_rate: 5, threshold: 50000 },
   ];
 
+  // Document requirements for different services (fallback hardcoded data)
+  const [openDoc, setOpenDoc] = useState<string | null>(null);
+  const [serviceTypes, setServiceTypes] = useState<any[]>([]);
+
+  const documentRequirements: Record<string, { title: string; items: string[] }> = {
+    'business_registration': {
+      title: 'Business Registration',
+      items: [
+        'Company 3 name suggestions',
+        'Shareholder Information',
+        'Email',
+        'Phone number',
+        'Passport bio page',
+        'Passport signature page (optional)',
+        'China Last Entry Page (optional)',
+        'China or Other Country Address',
+        'Business Scope in Short',
+      ]
+    },
+    'work_permit_z': {
+      title: 'Work Permit (Z Visa)',
+      items: [
+        'White background photo',
+        'Degree Certificate or Transcript',
+        'Medical File',
+        'Police Non-Criminal Certificate',
+        'Experience letter',
+        'Any professional Certificate (optional)',
+        'Language Certificate (Chinese or other) (optional)',
+        'Any additional certificate (optional)'
+      ]
+    },
+    'm_visa': {
+      title: 'M Visa',
+      items: [
+        'Passport bio page',
+        'White background photo',
+        'Non criminal certificate',
+        'Hotel booking',
+        'Flight booking',
+        'Itinerary',
+        'Email',
+        'Phone number',
+        'Incorporation letter (if any)',
+        'Information sheet filling',
+        'China last entry page (optional)'
+      ]
+    },
+    'tourist_group': {
+      title: 'Tourist Group Visa (min 3 people)',
+      items: [
+        'Passport bio page',
+        'Passport signature page (if any)',
+        'White background photo',
+        'Police non criminal certificate (optional)',
+        'China last entry page (optional)'
+      ]
+    },
+    'health_tour': {
+      title: 'Health Tour Visa',
+      items: [
+        'All M Visa documents',
+        'Previous health reports history and documents proof'
+      ]
+    },
+    'family_visa': {
+      title: 'Family Visa',
+      items: [
+        'Z Visa documents (as above)',
+        'Children Passport(s)',
+        'Child Passport bio page photo',
+        'White background photo',
+        'Marriage certificate',
+        'Birth certificate'
+      ]
+    }
+  };
+
   useEffect(() => {
     loadData();
   }, [user]);
@@ -87,15 +165,17 @@ export default function Commissions() {
         });
       }
       
-      // Fetch both Commissions and Applicants (needed for the create form)
-      const [commData, applicantsData] = await Promise.all([
+      // Fetch Commissions, Applicants, and Service Types (for document requirements)
+      const [commData, applicantsData, serviceTypesData] = await Promise.all([
         api.getCommissions(),
-        api.getApplicants()
+        api.getApplicants(),
+        api.getServiceTypes().catch(() => []),
       ]);
 
       setCommissions(commData);
       // Ensure applicants is an array (handle potential pagination wrapper)
       setApplicants(Array.isArray(applicantsData) ? applicantsData : (applicantsData as any).results || []);
+      setServiceTypes(Array.isArray(serviceTypesData) ? serviceTypesData : ((serviceTypesData as any)?.results || []));
 
     } catch (err) {
       console.error('Error loading data:', err);
@@ -229,6 +309,70 @@ export default function Commissions() {
           )}
         </div>
       </div>
+
+        {/* Document Requirements Section */}
+        <div className="bg-white rounded-xl p-5 mb-6 border">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Document Requirements</h3>
+            <p className="text-sm text-gray-500">Checklist per service / visa type</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {serviceTypes.length > 0 ? (
+              serviceTypes.map((svc: any) => (
+                <div key={svc.key || svc.id} className="border rounded-lg">
+                  <button
+                    onClick={() => setOpenDoc(openDoc === (svc.key || svc.id) ? null : (svc.key || svc.id))}
+                    className="w-full text-left p-4 flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900">{svc.name}</p>
+                      <p className="text-xs text-gray-500">{(svc.requirements || []).length} items</p>
+                    </div>
+                    <div className="text-gray-400">{openDoc === (svc.key || svc.id) ? '−' : '+'}</div>
+                  </button>
+
+                  {openDoc === (svc.key || svc.id) && (
+                    <div className="p-4 pt-0 border-t">
+                      <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                        {(svc.requirements || []).map((it: any, i: number) => (
+                          <li key={i} className={it.optional ? 'opacity-80 italic' : ''}>
+                            {it.title}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              Object.entries(documentRequirements).map(([key, def]) => (
+                <div key={key} className="border rounded-lg">
+                  <button
+                    onClick={() => setOpenDoc(openDoc === key ? null : key)}
+                    className="w-full text-left p-4 flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900">{def.title}</p>
+                      <p className="text-xs text-gray-500">{def.items.length} items</p>
+                    </div>
+                    <div className="text-gray-400">{openDoc === key ? '−' : '+'}</div>
+                  </button>
+
+                  {openDoc === key && (
+                    <div className="p-4 pt-0 border-t">
+                      <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                        {def.items.map((it, i) => (
+                          <li key={i} className={it.toLowerCase().includes('(optional)') ? 'opacity-80 italic' : ''}>
+                            {it}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

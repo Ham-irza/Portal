@@ -4,6 +4,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import Dashboard from '@/pages/Dashboard';
+import ApplicantDashboard from '@/pages/ApplicantDashboard';
 import Applications from '@/pages/Applications';
 import NewApplication from '@/pages/NewApplication';
 import ApplicationDetail from '@/pages/ApplicationDetail';
@@ -56,7 +57,14 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
       <div className="animate-spin h-10 w-10 border-4 border-orange-500 border-t-transparent rounded-full"></div>
     </div>
   );
-  return user ? <Navigate to="/dashboard" /> : <>{children}</>;
+  if (user) {
+    // Redirect applicants to a simpler applicant dashboard
+    // and partners/admins to the partner dashboard
+    const { profile } = useAuth();
+    if (profile?.role === 'applicant') return <Navigate to="/applicant" />;
+    return <Navigate to="/dashboard" />;
+  }
+  return <>{children}</>;
 }
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
@@ -81,7 +89,8 @@ function AppRoutes() {
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       <Route path="/onboarding" element={<PartnerOnboarding />} />
       
-      {/* Partner Routes */}
+      {/* Partner / Applicant Routes */}
+      <Route path="/applicant" element={<PrivateRoute><ApplicantDashboard /></PrivateRoute>} />
       <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
       <Route path="/lifecycle" element={<PrivateRoute><PartnerLifecycle /></PrivateRoute>} />
       <Route path="/applications" element={<PrivateRoute><Applications /></PrivateRoute>} />

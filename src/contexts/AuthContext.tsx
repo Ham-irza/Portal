@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { api, tokenService } from '@/lib/api';
 
-export type UserRole = 'partner' | 'admin' | 'team_member';
+export type UserRole = 'partner' | 'admin' | 'team_member' | 'applicant';
 
 export interface Profile {
   id: number;
@@ -38,6 +38,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string, companyName: string, contactPhone?: string) => Promise<{ error: Error | null }>;
+  signUpApplicant: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -58,15 +59,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const profileData: Profile = {
         id: meData.id,
         email: meData.email,
-        full_name: meData.partner?.contact_name || null,
+        full_name: meData.partner?.contact_name || meData.first_name || null,
         company_name: meData.partner?.company_name || null,
-        role: meData.is_superuser ? 'admin' : meData.is_staff ? 'team_member' : 'partner',
+        role: meData.is_superuser
+          ? 'admin'
+          : meData.is_staff
+          ? 'team_member'
+          : meData.partner
+          ? 'partner'
+          : 'applicant',
         phone: null,
         country: null,
         department: null,
         specialization: null,
         max_workload: null,
-        is_active: meData.partner?.status === 'active',
+        is_active: meData.partner ? meData.partner.status === 'active' : meData.is_active,
         created_at: '',
         updated_at: '',
       };
@@ -122,6 +129,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signUpApplicant = async (email: string, password: string, fullName?: string) => {
+    try {
+      await api.registerApplicant({
+        email,
+        password,
+        ...(fullName && { full_name: fullName }),
+      });
+      // After registration, automatically log in
+      await signIn(email, password);
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
   const signOut = async () => {
     tokenService.clearTokens();
     setUser(null);
@@ -133,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signUpApplicant, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

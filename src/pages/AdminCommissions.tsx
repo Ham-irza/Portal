@@ -1,33 +1,8 @@
 import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
-import { api } from '@/lib/api';
+import { api, type Commission, type CommissionRule } from '@/lib/api'; // 1. Import types from API
 
-// 
-
-interface Commission {
-  id: number;
-  applicant: number;
-  applicant_name: string;
-  partner_name: string;
-  amount: number;
-  currency: string;
-  status: string;
-  paid_at: string | null;
-  payout_reference?: string;
-  notes?: string;
-  created_at: string;
-  updated_at?: string;
-}
-
-interface CommissionRule {
-  id: number;
-  tier: string;
-  base_rate: number;
-  bonus_rate: number;
-  threshold?: number; // This matches 'min_referrals' logic
-  is_active?: boolean;
-  name?: string;     // Added for optional naming
-}
+// 2. Local interfaces removed to prevent conflicts
 
 export default function AdminCommissions() {
   const [commissions, setCommissions] = useState<Commission[]>([]);
@@ -62,7 +37,8 @@ export default function AdminCommissions() {
   const updateCommissionStatus = async (id: number, status: string) => {
     try {
       await api.updateCommission(id, {
-        status,
+        // 3. Cast status to any because 'processing' might not be in the strict API type definition yet
+        status: status as any, 
         paid_at: status === 'paid' ? new Date().toISOString() : null,
       });
       loadData();
@@ -74,7 +50,8 @@ export default function AdminCommissions() {
   const batchApprove = async () => {
     try {
       await Promise.all(selectedIds.map(id => 
-        api.updateCommission(parseInt(id), { status: 'processing' })
+        // 3. Cast status here as well
+        api.updateCommission(parseInt(id), { status: 'processing' as any })
       ));
       setSelectedIds([]);
       loadData();
@@ -110,18 +87,14 @@ export default function AdminCommissions() {
       };
 
       if (editingRule) {
-        // UPDATE Existing Rule
-        // @ts-ignore (Assuming method exists in api.ts now)
         await api.updateCommissionRule(editingRule.id, payload);
       } else {
-        // CREATE New Rule
-        // @ts-ignore (Assuming method exists in api.ts now)
         await api.createCommissionRule(payload);
       }
 
       setShowRuleModal(false);
       setEditingRule(null);
-      loadData(); // Refresh the list
+      loadData(); 
     } catch (err) {
       console.error('Error saving rule:', err);
       alert('Failed to save rule. Ensure you are an Admin.');
@@ -130,9 +103,12 @@ export default function AdminCommissions() {
 
   const filteredCommissions = commissions.filter(c => filter === 'all' || c.status === filter);
 
-  const totalPending = commissions.filter(c => c.status === 'pending').reduce((s, c) => s + c.amount, 0);
-  const totalProcessing = commissions.filter(c => c.status === 'processing').reduce((s, c) => s + c.amount, 0);
-  const totalPaid = commissions.filter(c => c.status === 'paid').reduce((s, c) => s + c.amount, 0);
+  // Helper to safely parse amounts (handle string or number)
+  const getAmount = (amt: string | number) => typeof amt === 'string' ? parseFloat(amt) : amt;
+
+  const totalPending = commissions.filter(c => c.status === 'pending').reduce((s, c) => s + getAmount(c.amount), 0);
+  const totalProcessing = commissions.filter(c => c.status === 'processing').reduce((s, c) => s + getAmount(c.amount), 0);
+  const totalPaid = commissions.filter(c => c.status === 'paid').reduce((s, c) => s + getAmount(c.amount), 0);
 
   const tierColors: Record<string, string> = {
     Bronze: 'bg-amber-100 text-amber-800',
@@ -143,7 +119,6 @@ export default function AdminCommissions() {
 
   // Helper for safe tier display
   const getTierColor = (tier: string) => {
-      // Capitalize first letter to match keys
       const key = tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase();
       return tierColors[key] || 'bg-gray-100 text-gray-800';
   };
@@ -280,13 +255,13 @@ export default function AdminCommissions() {
                         {new Date(commission.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-4 text-sm font-medium text-gray-800">
-                        {commission.partner_name}
+                        {commission.partner_name || 'N/A'}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600">
                         {commission.applicant_name}
                       </td>
                       <td className="px-4 py-4 font-medium text-gray-800">
-                        ${commission.amount.toLocaleString()} {commission.currency}
+                        ${getAmount(commission.amount).toLocaleString()} {commission.currency}
                       </td>
                       <td className="px-4 py-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -340,7 +315,8 @@ export default function AdminCommissions() {
                 <div key={rule.id} className="bg-white rounded-xl border p-6">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-gray-800">{rule.name || `${rule.tier} Rule`}</h3>
+                      {/* Use 'tier' as name if name property is missing */}
+                      <h3 className="font-semibold text-gray-800">{(rule as any).name || `${rule.tier} Rule`}</h3>
                       <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs capitalize ${getTierColor(rule.tier)}`}>
                         {rule.tier} Tier
                       </span>
@@ -358,20 +334,20 @@ export default function AdminCommissions() {
                   <div className="mt-4 grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-gray-500">Base Rate</p>
-                      <p className="text-xl font-bold text-orange-600">{rule.base_rate}%</p>
+                      <p className="text-xl font-bold text-orange-600">{Number(rule.base_rate)}%</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Bonus Rate</p>
-                      <p className="text-xl font-bold text-green-600">+{rule.bonus_rate}%</p>
+                      <p className="text-xl font-bold text-green-600">+{Number(rule.bonus_rate)}%</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Threshold (Value)</p>
-                      <p className="text-lg font-medium text-gray-800">${rule.threshold?.toLocaleString() || 0}</p>
+                      <p className="text-lg font-medium text-gray-800">${Number(rule.threshold || 0).toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Status</p>
-                      <span className={`px-2 py-0.5 rounded text-xs ${rule.is_active !== false ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                        {rule.is_active !== false ? 'Active' : 'Inactive'}
+                      <span className={`px-2 py-0.5 rounded text-xs ${(rule as any).is_active !== false ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {(rule as any).is_active !== false ? 'Active' : 'Inactive'}
                       </span>
                     </div>
                   </div>
@@ -390,7 +366,7 @@ export default function AdminCommissions() {
               <div className="p-4 bg-blue-50 rounded-lg">
                 <h3 className="font-medium text-blue-800">Approved Commissions Ready for Payment</h3>
                 <p className="text-3xl font-bold text-blue-600 mt-2">
-                  ${commissions.filter(c => c.status === 'processing').reduce((s, c) => s + c.amount, 0).toLocaleString()}
+                  ${commissions.filter(c => c.status === 'processing').reduce((s, c) => s + getAmount(c.amount), 0).toLocaleString()}
                 </p>
                 <p className="text-sm text-blue-600 mt-1">
                   {commissions.filter(c => c.status === 'processing').length} commission(s)
@@ -432,12 +408,12 @@ function RuleModal({ rule, onSave, onClose }: {
   onClose: () => void;
 }) {
   const [form, setForm] = useState({
-    name: rule?.name || '',
-    tier: rule?.tier || 'Bronze', // Default to Capitalized to match backend
+    name: (rule as any)?.name || '',
+    tier: rule?.tier || 'Bronze', 
     base_rate: rule?.base_rate || 10,
     bonus_rate: rule?.bonus_rate || 0,
-    threshold: rule?.threshold || 0, // Mapped to threshold
-    is_active: rule?.is_active ?? true,
+    threshold: rule?.threshold || 0,
+    is_active: (rule as any)?.is_active ?? true,
   });
 
   return (
@@ -542,7 +518,7 @@ function RuleModal({ rule, onSave, onClose }: {
   );
 }
 
-// Simple Icon Component (Since Lucide might not be imported in this file scope)
+// Simple Icon Component
 const X = ({ size = 24 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="18" y1="6" x2="6" y2="18"></line>

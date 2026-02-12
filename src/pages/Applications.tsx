@@ -4,8 +4,16 @@ import { api } from '@/lib/api';
 import { getStatusColor } from '@/lib/supabase';
 import Layout from '@/components/Layout';
 import { 
-  Plus, Search, Filter, ChevronRight, Eye, Trash2, AlertCircle, Loader, FileText
+  Plus, Search, Filter, ChevronRight, Eye, Trash2, AlertCircle, Loader, FileText, BadgeInfo
 } from 'lucide-react';
+
+// 1. Fixed: Moved ServiceType outside of Applicant
+interface ServiceType {
+  id: number;
+  key: string;
+  name: string;
+  description?: string;
+}
 
 interface Applicant {
   id: number;
@@ -23,6 +31,7 @@ export default function Applications() {
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -32,14 +41,21 @@ export default function Applications() {
     setLoading(true);
     setError('');
     try {
-      const params: any = {};
+      const params: Record<string, string> = {};
       if (searchTerm) params.search = searchTerm;
       if (statusFilter) params.status = statusFilter;
       
-      const data = await api.getApplicants(params);
-      // Handle Django paginated response
+      const [data, services] = await Promise.all([
+        api.getApplicants(params),
+        api.getServiceTypes().catch(() => [])
+      ]);
+
+      // Handle Django paginated response vs Array
       const applicantsList = Array.isArray(data) ? data : ((data as any)?.results || []);
+      const servicesList = Array.isArray(services) ? services : ((services as any)?.results || []);
+      
       setApplicants(applicantsList);
+      setServiceTypes(servicesList);
     } catch (err: any) {
       console.error('Error fetching applicants:', err);
       setError('Failed to load applications');
@@ -52,13 +68,20 @@ export default function Applications() {
     fetchApplicants();
   }, [fetchApplicants]);
 
+  // 2. Fixed: Moved getServiceInfo OUT of useEffect so it can be used in the JSX return
+  const getServiceInfo = (visaType?: string) => {
+    if (!visaType) return null;
+    const key = visaType.toLowerCase().replace(/\s+/g, '_');
+    return serviceTypes.find(s => s.key === key || s.name.toLowerCase() === visaType.toLowerCase());
+  };
+
   const deleteApplicant = async (id: number) => {
     if (!confirm('Are you sure you want to delete this application?')) return;
     
     setDeleting(id);
     try {
       await api.deleteApplicant(id);
-      setApplicants(applicants.filter(app => app.id !== id));
+      setApplicants(prev => prev.filter(app => app.id !== id));
     } catch (err) {
       console.error('Error deleting applicant:', err);
       alert('Failed to delete application');
@@ -163,7 +186,19 @@ export default function Applications() {
                     <tr key={app.id} className="hover:bg-gray-50 transition">
                       <td className="px-6 py-4 text-sm text-gray-900 font-medium">{app.full_name}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{app.passport_number || '-'}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{app.visa_type || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        <div className="group relative inline-flex items-center gap-2">
+                          {app.visa_type || '-'}
+                          {getServiceInfo(app.visa_type) && (
+                            <>
+                              <BadgeInfo className="h-4 w-4 text-blue-500 opacity-0 group-hover:opacity-100 transition cursor-help" />
+                              <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded py-2 px-3 whitespace-nowrap z-20">
+                                {getServiceInfo(app.visa_type)?.description}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-600">{app.destination_country || '-'}</td>
                       <td className="px-6 py-4 text-sm">
                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(app.status)}`}>
