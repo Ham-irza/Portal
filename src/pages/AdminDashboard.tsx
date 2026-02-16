@@ -51,62 +51,77 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
 
-      // 1. Parallel Fetch using available API methods
-      // Removed api.getUsers() because it doesn't exist in the API client
-      const [partnersData, applicantsData] = await Promise.all([
-        api.getPartners(),
-        api.getApplicants(),
-      ]);
+      // Try to fetch from backend API first
+      try {
+        const adminStats = await api.getAdminStats();
+        
+        setStats({
+          totalPartners: adminStats.total_partners || 0,
+          totalApplicants: adminStats.total_applicants || 0,
+          activeApplications: adminStats.active_applicants || 0,
+          pendingDocuments: adminStats.pending_documents || 0,
+          teamMembers: 1, // Will be updated when team member API is called
+          completedThisMonth: adminStats.completed_applicants || 0
+        });
+      } catch (apiError) {
+        // Fallback to manual fetch if API doesn't exist
+        console.log('Using fallback manual fetch');
+        
+        const [partnersData, applicantsData] = await Promise.all([
+          api.getPartners(),
+          api.getApplicants(),
+        ]);
 
-      // Normalize data (Safety check in case the API wrapper didn't fully unwrap .results)
-      const partners = Array.isArray(partnersData) ? partnersData : ((partnersData as any)?.results || []);
-      const applicants = (Array.isArray(applicantsData) ? applicantsData : ((applicantsData as any)?.results || [])) as DashboardApplicant[];
-      
-      // 2. Calculate Statistics
-      const now = new Date();
-      
-      const thisMonthCompleted = applicants.filter(a => {
-        if (!a.created_at) return false;
-        const created = new Date(a.created_at);
-        return (
-          created.getMonth() === now.getMonth() && 
-          created.getFullYear() === now.getFullYear() && 
-          (a.status === 'approved' || a.status === 'completed')
+        const partners = Array.isArray(partnersData) ? partnersData : ((partnersData as any)?.results || []);
+        const applicants = (Array.isArray(applicantsData) ? applicantsData : ((applicantsData as any)?.results || [])) as DashboardApplicant[];
+        
+        const now = new Date();
+        
+        const thisMonthCompleted = applicants.filter(a => {
+          if (!a.created_at) return false;
+          const created = new Date(a.created_at);
+          return (
+            created.getMonth() === now.getMonth() && 
+            created.getFullYear() === now.getFullYear() && 
+            (a.status === 'approved' || a.status === 'completed')
+          );
+        });
+
+        const activeApps = applicants.filter(a => 
+          !['approved', 'rejected', 'completed'].includes(a.status)
         );
-      });
 
-      // Active: Not in a final state
-      const activeApps = applicants.filter(a => 
-        !['approved', 'rejected', 'completed'].includes(a.status)
-      );
+        const pendingDocsApps = applicants.filter(a => 
+          a.status === 'docs_pending' || a.status === 'new'
+        );
 
-      // Pending Docs: Specifically waiting on documents or just started
-      const pendingDocsApps = applicants.filter(a => 
-        a.status === 'docs_pending' || a.status === 'new'
-      );
+        setStats({
+          totalPartners: partners.length,
+          totalApplicants: applicants.length,
+          activeApplications: activeApps.length,
+          pendingDocuments: pendingDocsApps.length,
+          teamMembers: 1,
+          completedThisMonth: thisMonthCompleted.length
+        });
+      }
 
-      setStats({
-        totalPartners: partners.length,
-        totalApplicants: applicants.length,
-        activeApplications: activeApps.length,
-        pendingDocuments: pendingDocsApps.length,
-        // Default to 1 (You) since the getUsers endpoint is missing
-        teamMembers: 1, 
-        completedThisMonth: thisMonthCompleted.length
-      });
+      // Fetch recent applicants
+      try {
+        const applicantsData = await api.getApplicants({ ordering: '-created_at' });
+        const applicants = (Array.isArray(applicantsData) ? applicantsData : ((applicantsData as any)?.results || [])) as DashboardApplicant[];
+        
+        const sortedApps = [...applicants].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setRecentApps(sortedApps.slice(0, 10));
 
-      // 3. Set Recent Applications (Top 10)
-      const sortedApps = [...applicants].sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      setRecentApps(sortedApps.slice(0, 10));
-
-      // 4. Set Pending Actions (New, Docs Pending, Processing)
-      const actionItems = sortedApps
-        .filter(a => ['new', 'docs_pending', 'processing'].includes(a.status))
-        .slice(0, 5);
-      
-      setPendingActions(actionItems);
+        const actionItems = sortedApps
+          .filter(a => ['new', 'docs_pending', 'processing'].includes(a.status))
+          .slice(0, 5);
+        setPendingActions(actionItems);
+      } catch (e) {
+        console.error('Error fetching applicants:', e);
+      }
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);

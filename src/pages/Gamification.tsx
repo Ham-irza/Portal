@@ -29,7 +29,7 @@ interface PointsTransaction {
 
 interface LeaderboardEntry {
   rank: number;
-  partner_id: string;
+  partner_id: number | string;
   name: string;
   company: string;
   points: number;

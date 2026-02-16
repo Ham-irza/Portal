@@ -16,6 +16,9 @@ interface Ticket {
   id: number;
   subject: string;
   status: string;
+  category?: string;
+  priority?: string;
+  description?: string;
   created_at: string;
   updated_at: string;
   messages?: TicketMessage[];
@@ -80,6 +83,8 @@ export default function SupportTickets() {
       const data = await api.createTicket({
         subject: newTicket.subject,
         initial_message: newTicket.description,
+        category: newTicket.category.toLowerCase(),
+        priority: newTicket.priority.toLowerCase(),
       });
       setShowNewTicket(false);
       setNewTicket({ subject: '', description: '', category: 'General', priority: 'medium' });

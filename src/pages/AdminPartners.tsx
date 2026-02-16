@@ -45,7 +45,7 @@ export default function AdminPartners() {
   const fetchPartners = async () => {
     try {
       const data = await api.getPartners();
-      const partnersData = Array.isArray(data) ? data : (data?.results || []);
+      const partnersData = Array.isArray(data) ? data : ((data as any)?.results || []);
       setPartners(partnersData);
     } catch (error) {
       console.error('Failed to fetch partners:', error);
@@ -99,12 +99,10 @@ export default function AdminPartners() {
     if (!editingPartner) return;
     
     try {
-      await api.updatePartner(parseInt(editingPartner.id), {
+      await api.updatePartner(editingPartner.id, {
         company_name: editingPartner.company_name,
         contact_name: editingPartner.contact_name,
         contact_phone: editingPartner.contact_phone,
-        country: editingPartner.country,
-        tier: editingPartner.tier,
         commission_rate: editingPartner.commission_rate,
       });
       

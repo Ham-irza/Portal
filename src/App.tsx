@@ -21,8 +21,6 @@ import Referrals from '@/pages/Referrals';
 import Commissions from '@/pages/Commissions';
 import ResourceCenter from '@/pages/ResourceCenter';
 import SupportTickets from '@/pages/SupportTickets';
-import AdminCommissions from '@/pages/AdminCommissions';
-import AdminContent from '@/pages/AdminContent';
 import AdminAnalytics from '@/pages/AdminAnalytics';
 import AdminTickets from '@/pages/AdminTickets';
 // Phase 2 imports
@@ -31,11 +29,6 @@ import PartnerLifecycle from '@/pages/PartnerLifecycle';
 import TrainingCenter from '@/pages/TrainingCenter';
 import CobrandedAssets from '@/pages/CobrandedAssets';
 import Gamification from '@/pages/Gamification';
-import AdminWorkflowBuilder from '@/pages/AdminWorkflowBuilder';
-import AdminDocumentVerification from '@/pages/AdminDocumentVerification';
-import AdminBulkOperations from '@/pages/AdminBulkOperations';
-import AdminPredictiveAnalytics from '@/pages/AdminPredictiveAnalytics';
-import AdminReportBuilder from '@/pages/AdminReportBuilder';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -113,15 +106,8 @@ function AppRoutes() {
       <Route path="/admin/partners" element={<AdminRoute><AdminPartners /></AdminRoute>} />
       <Route path="/admin/referrals" element={<AdminRoute><Referrals /></AdminRoute>} />
       <Route path="/admin/deals" element={<AdminRoute><DealRegistration /></AdminRoute>} />
-      <Route path="/admin/commissions" element={<AdminRoute><AdminCommissions /></AdminRoute>} />
-      <Route path="/admin/content" element={<AdminRoute><AdminContent /></AdminRoute>} />
       <Route path="/admin/tickets" element={<AdminRoute><AdminTickets /></AdminRoute>} />
       <Route path="/admin/analytics" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
-      <Route path="/admin/predictive" element={<AdminRoute><AdminPredictiveAnalytics /></AdminRoute>} />
-      <Route path="/admin/workflows" element={<AdminRoute><AdminWorkflowBuilder /></AdminRoute>} />
-      <Route path="/admin/verification" element={<AdminRoute><AdminDocumentVerification /></AdminRoute>} />
-      <Route path="/admin/bulk" element={<AdminRoute><AdminBulkOperations /></AdminRoute>} />
-      <Route path="/admin/report-builder" element={<AdminRoute><AdminReportBuilder /></AdminRoute>} />
       <Route path="/admin/team" element={<AdminRoute><AdminTeam /></AdminRoute>} />
       <Route path="/admin/documents" element={<AdminRoute><AdminDocuments /></AdminRoute>} />
       <Route path="/admin/reports" element={<AdminRoute><AdminReports /></AdminRoute>} />

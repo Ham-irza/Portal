@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Resource {
-  id: string;
+  id: number;
   title: string;
   description: string;
   category: string;
@@ -17,7 +17,7 @@ interface Resource {
 }
 
 interface TrainingModule {
-  id: string;
+  id: number;
   title: string;
   description: string;
   content_type: string;
@@ -55,19 +55,19 @@ export default function AdminContent() {
     setLoading(false);
   };
 
-  const togglePublish = async (id: string, current: boolean) => {
+  const togglePublish = async (id: number | string, current: boolean) => {
     await supabase.from('resources').update({ is_published: !current }).eq('id', id);
     loadData();
   };
 
-  const deleteResource = async (id: string) => {
+  const deleteResource = async (id: number | string) => {
     if (confirm('Delete this resource?')) {
       await supabase.from('resources').delete().eq('id', id);
       loadData();
     }
   };
 
-  const deleteModule = async (id: string) => {
+  const deleteModule = async (id: number | string) => {
     if (confirm('Delete this training module?')) {
       await supabase.from('training_modules').delete().eq('id', id);
       loadData();

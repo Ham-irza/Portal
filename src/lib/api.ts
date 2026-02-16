@@ -192,11 +192,12 @@ class ApiClient {
     access: string;
     refresh: string;
   }> {
+    // Send both email and username since the User model uses email as USERNAME_FIELD
     const data = await this.request<{ access: string; refresh: string }>(
       '/api/auth/login/',
       {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username: email, email, password }),
       }
     );
     tokenService.setTokens(data.access, data.refresh);
@@ -418,6 +419,8 @@ class ApiClient {
   async createTicket(data: {
     subject: string;
     initial_message: string;
+    category?: string;
+    priority?: string;
   }): Promise<any> {
     return this.request('/api/tickets/', {
       method: 'POST',
@@ -444,14 +447,14 @@ class ApiClient {
     return Array.isArray(data) ? data : ((data as any)?.results || []);
   }
 
-  // Reports
+  // Reports - Backend uses from_date/to_date, not start_date/end_date
   async getPartnerReport(params?: {
     start_date?: string;
     end_date?: string;
   }): Promise<any> {
     const queryParams = new URLSearchParams();
-    if (params?.start_date) queryParams.append('start_date', params.start_date);
-    if (params?.end_date) queryParams.append('end_date', params.end_date);
+    if (params?.start_date) queryParams.append('from_date', params.start_date);
+    if (params?.end_date) queryParams.append('to_date', params.end_date);
     
     const queryString = queryParams.toString();
     const url = queryString ? `/api/reports/partner/?${queryString}` : '/api/reports/partner/';
@@ -460,8 +463,8 @@ class ApiClient {
 
   async exportPartnerReportCSV(params?: { start_date?: string; end_date?: string; }) : Promise<Blob> {
     const queryParams = new URLSearchParams();
-    if (params?.start_date) queryParams.append('start_date', params.start_date);
-    if (params?.end_date) queryParams.append('end_date', params.end_date);
+    if (params?.start_date) queryParams.append('from_date', params.start_date);
+    if (params?.end_date) queryParams.append('to_date', params.end_date);
     const queryString = queryParams.toString();
     const url = queryString ? `${this.baseURL}/api/reports/partner/export/csv/?${queryString}` : `${this.baseURL}/api/reports/partner/export/csv/`;
     const token = tokenService.getAccessToken();
@@ -472,8 +475,8 @@ class ApiClient {
 
   async exportPartnerReportPDF(params?: { start_date?: string; end_date?: string; }) : Promise<Blob> {
     const queryParams = new URLSearchParams();
-    if (params?.start_date) queryParams.append('start_date', params.start_date);
-    if (params?.end_date) queryParams.append('end_date', params.end_date);
+    if (params?.start_date) queryParams.append('from_date', params.start_date);
+    if (params?.end_date) queryParams.append('to_date', params.end_date);
     const queryString = queryParams.toString();
     const url = queryString ? `${this.baseURL}/api/reports/partner/export/pdf/?${queryString}` : `${this.baseURL}/api/reports/partner/export/pdf/`;
     const token = tokenService.getAccessToken();
@@ -489,8 +492,8 @@ class ApiClient {
   }): Promise<any> {
     const queryParams = new URLSearchParams();
     if (params?.partner_id) queryParams.append('partner_id', params.partner_id.toString());
-    if (params?.start_date) queryParams.append('start_date', params.start_date);
-    if (params?.end_date) queryParams.append('end_date', params.end_date);
+    if (params?.start_date) queryParams.append('from_date', params.start_date);
+    if (params?.end_date) queryParams.append('to_date', params.end_date);
     
     const queryString = queryParams.toString();
     const url = queryString ? `/api/reports/admin/?${queryString}` : '/api/reports/admin/';
@@ -500,8 +503,8 @@ class ApiClient {
   async exportAdminReportCSV(params?: { partner_id?: number; start_date?: string; end_date?: string; }) : Promise<Blob> {
     const queryParams = new URLSearchParams();
     if (params?.partner_id) queryParams.append('partner_id', params.partner_id.toString());
-    if (params?.start_date) queryParams.append('start_date', params.start_date);
-    if (params?.end_date) queryParams.append('end_date', params.end_date);
+    if (params?.start_date) queryParams.append('from_date', params.start_date);
+    if (params?.end_date) queryParams.append('to_date', params.end_date);
     const queryString = queryParams.toString();
     const url = queryString ? `${this.baseURL}/api/reports/admin/export/csv/?${queryString}` : `${this.baseURL}/api/reports/admin/export/csv/`;
     const token = tokenService.getAccessToken();
@@ -530,6 +533,21 @@ class ApiClient {
     return this.request(`/api/auth/partners/${id}/approve/`, {
       method: 'POST',
     });
+  }
+
+  // Admin endpoints - Team Members
+  async getTeamMembers(): Promise<any[]> {
+    const data = await this.request('/api/auth/team/');
+    return Array.isArray(data) ? data : ((data as any)?.results || []);
+  }
+
+  // Analytics / Dashboard Stats
+  async getAdminStats(): Promise<any> {
+    return this.request('/api/dashboard/admin-stats/');
+  }
+
+  async getAnalyticsOverview(): Promise<any> {
+    return this.request('/api/analytics/overview/');
   }
 
   // Admin endpoints - Documents (all documents across all partners)
