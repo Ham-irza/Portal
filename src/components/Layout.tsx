@@ -23,15 +23,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const partnerNavItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/lifecycle', label: 'My Journey', icon: Target },
     { path: '/applications', label: 'Applicants', icon: FileText },
     { path: '/deals', label: 'Deal Registration', icon: Briefcase },
     { path: '/referrals', label: 'Referrals', icon: Users },
     { path: '/commissions', label: 'Commissions', icon: DollarSign },
-    { path: '/training', label: 'Training', icon: BookOpen },
-    { path: '/assets', label: 'Marketing Assets', icon: Palette },
-    { path: '/achievements', label: 'Achievements', icon: Award },
-    { path: '/resources', label: 'Resources', icon: FolderOpen },
     { path: '/support', label: 'Support', icon: HeadphonesIcon },
     { path: '/reports', label: 'Reports', icon: BarChart3 },
     { path: '/messages', label: 'Messages', icon: MessageSquare },

@@ -296,32 +296,6 @@ export default function AdminPartners() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          {partner.status === 'pending' && (
-                            <button 
-                              onClick={() => approvePartner(partner.id)} 
-                              className="p-1.5 text-green-600 hover:bg-green-100 rounded"
-                              title="Approve Partner"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </button>
-                          )}
-                          {partner.status !== 'blocked' ? (
-                            <button 
-                              onClick={() => blockPartner(partner.id)} 
-                              className="p-1.5 text-red-500 hover:bg-red-100 rounded"
-                              title="Block Partner"
-                            >
-                              <Ban className="h-4 w-4" />
-                            </button>
-                          ) : (
-                            <button 
-                              onClick={() => updatePartnerStatus(partner.id, 'approved')} 
-                              className="p-1.5 text-blue-500 hover:bg-blue-100 rounded"
-                              title="Unblock Partner"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </button>
-                          )}
                           <button 
                             onClick={() => openEditModal(partner)} 
                             className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded"

@@ -626,6 +626,87 @@ class ApiClient {
       method: 'DELETE',
     });
   }
+
+  // Team Invitations
+  async getTeamInvitations(): Promise<any[]> {
+    return this.request('/api/auth/team/invitations/');
+  }
+
+  async createTeamInvitation(data: { email: string; role?: string }): Promise<any> {
+    return this.request('/api/auth/team/invitations/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteTeamInvitation(id: number): Promise<void> {
+    return this.request(`/api/auth/team/invitations/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  async acceptInvitation(data: { token: string; password: string; full_name?: string }): Promise<any> {
+    return this.request('/api/auth/accept-invitation/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Email Verification
+  async verifyEmail(token: string): Promise<any> {
+    return this.request('/api/auth/verify-email/', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+  }
+
+  async resendVerification(email: string): Promise<any> {
+    return this.request('/api/auth/resend-verification/', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  // Two-Factor Authentication
+  async getTwoFactorAuth(): Promise<any> {
+    return this.request('/api/auth/two-factor-auth/');
+  }
+
+  async updateTwoFactorAuth(data: { is_enabled: boolean; method: string }): Promise<any> {
+    return this.request('/api/auth/two-factor-auth/', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async sendTwoFactorCode(): Promise<any> {
+    return this.request('/api/auth/two-factor-auth/send-code/', {
+      method: 'POST',
+    });
+  }
+
+  async verifyTwoFactorCode(code: string): Promise<any> {
+    return this.request('/api/auth/two-factor-auth/verify/', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    });
+  }
+
+  // Password Change
+  async changePassword(data: { current_password: string; new_password: string; confirm_password: string }): Promise<any> {
+    return this.request('/api/auth/change-password/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Add Partner as Team Member
+  async addPartnerAsTeamMember(partnerId: number, role: string = 'team_member'): Promise<any> {
+    return this.request('/api/auth/team/add-partner/', {
+      method: 'POST',
+      body: JSON.stringify({ partner_id: partnerId, role }),
+    });
+  }
 }
 
 

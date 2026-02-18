@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 interface Applicant {
-  id: number; // Django AutoField
+  id: number;
   full_name: string;
   email?: string;
   phone?: string;
@@ -27,27 +27,26 @@ interface Applicant {
   marital_status?: string;
   status: string;
   notes?: string;
-  extra_data?: Record<string, any>; // JSONField
+  extra_data?: Record<string, any>;
   created_at: string;
   updated_at: string;
 }
 
 interface Document {
-  id: string; // UUIDField -> String in Frontend
+  id: string;
   applicant: number;
-  document_type: string; // e.g. 'passport', 'photo'
-  file: string; // URL string
+  document_type: string;
+  file: string;
   original_filename: string;
   status: 'pending' | 'approved' | 'rejected';
-  notes?: string; // Backend uses 'notes', not 'admin_comment'
+  notes?: string;
   uploaded_at: string;
-  
 }
 
 interface Payment {
   id: number;
   applicant: number;
-  amount: number | string; // DecimalField often comes as string to preserve precision
+  amount: number | string;
   currency: string;
   status: 'unpaid' | 'paid' | 'partial' | 'refunded';
   payment_date?: string | null;
@@ -56,6 +55,7 @@ interface Payment {
   notes?: string;
   created_at: string;
 }
+
 interface ServiceType {
   id: number;
   key: string;
@@ -71,6 +71,7 @@ interface DocumentRequirement {
   document_name: string;
   is_optional: boolean;
 }
+
 export default function ApplicationDetail() {
   const { id } = useParams();
   const { user, profile } = useAuth();
@@ -94,9 +95,17 @@ export default function ApplicationDetail() {
   const [documentRequirements, setDocumentRequirements] = useState<DocumentRequirement[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingApp, setEditingApp] = useState<Applicant | null>(null);
+  const [newExtraKey, setNewExtraKey] = useState('');
+  const [newExtraValue, setNewExtraValue] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [saveSuccess, setSaveSuccess] = useState('');
+  
   const isAdmin = profile?.role === 'admin' || profile?.role === 'team_member';
 
-  // Get document requirements for the applicant's visa type
   const visaTypeKey = app?.visa_type?.toLowerCase().replace(/\s+/g, '_') || '';
   const applicantDocRequirements = documentRequirements.filter(
     (req) => req.service_key === visaTypeKey || req.service_name?.toLowerCase() === app?.visa_type?.toLowerCase()
@@ -114,19 +123,12 @@ export default function ApplicationDetail() {
         api.getDocumentRequirements().catch(() => []),
       ]);
       setApp(appData);
-
-      // `getDocuments` and `getPayments` may return either an array or a paginated
-      // object { results: [...] }. Normalize both to arrays to avoid runtime
-      // errors like "documents.filter is not a function".
       const normalizedDocs = Array.isArray(docsData) ? docsData : ((docsData as any)?.results || []);
       const normalizedPayments = Array.isArray(payData) ? payData : ((payData as any)?.results || []);
-
       setDocuments(normalizedDocs);
       setPayments(normalizedPayments);
       setServiceTypes(Array.isArray(servicesData) ? servicesData : ((servicesData as any)?.results || []));
       setDocumentRequirements(Array.isArray(reqsData) ? reqsData : ((reqsData as any)?.results || []));
-
-      // Messages and status history not available in backend yet
       setMessages([]);
       setStatusHistory([]);
     } catch (error) {
@@ -166,10 +168,7 @@ export default function ApplicationDetail() {
 
   const addNewExtraField = () => {
     if (newFieldKey.trim()) {
-      setExtraDataEdit({
-        ...extraDataEdit,
-        [newFieldKey.trim()]: newFieldValue
-      });
+      setExtraDataEdit({ ...extraDataEdit, [newFieldKey.trim()]: newFieldValue });
       setNewFieldKey('');
       setNewFieldValue('');
     }
@@ -182,10 +181,7 @@ export default function ApplicationDetail() {
   };
 
   const updateExtraField = (key: string, value: string) => {
-    setExtraDataEdit({
-      ...extraDataEdit,
-      [key]: value
-    });
+    setExtraDataEdit({ ...extraDataEdit, [key]: value });
   };
 
   const saveExtraData = async () => {
@@ -203,7 +199,6 @@ export default function ApplicationDetail() {
   };
 
   const sendMessage = async () => {
-    // Messages not implemented in backend yet
     alert('Messages feature coming soon');
   };
 
@@ -230,10 +225,7 @@ export default function ApplicationDetail() {
   const uploadFile = async (file: File, category: string) => {
     if (!app) return;
     const error = validateFile(file);
-    if (error) {
-      alert(error);
-      return;
-    }
+    if (error) { alert(error); return; }
 
     setUploading(true);
     try {
@@ -242,10 +234,7 @@ export default function ApplicationDetail() {
       formData.append('document_type', category);
       formData.append('file', file);
       const typeLabel = BACKEND_DOCUMENT_TYPES.find(t => t.value === category)?.label;
-      if (typeLabel) {
-        formData.append('notes', `Uploaded: ${typeLabel}`);
-      }
-
+      if (typeLabel) formData.append('notes', `Uploaded: ${typeLabel}`);
       await api.uploadDocument(formData);
       fetchData();
     } catch (err) {
@@ -260,12 +249,9 @@ export default function ApplicationDetail() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0 && selectedCategory) {
-      for (const file of files) {
-        await uploadFile(file, selectedCategory);
-      }
+      for (const file of files) await uploadFile(file, selectedCategory);
     } else if (!selectedCategory) {
       alert('Please select a document category first');
     }
@@ -274,9 +260,7 @@ export default function ApplicationDetail() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || !selectedCategory) return;
-    for (const file of Array.from(files)) {
-      await uploadFile(file, selectedCategory);
-    }
+    for (const file of Array.from(files)) await uploadFile(file, selectedCategory);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -297,10 +281,7 @@ export default function ApplicationDetail() {
 
   const updateDocStatus = async (docId: string, status: 'approved' | 'rejected', comment?: string) => {
     try {
-      await api.updateDocument(docId, {
-        status,
-        notes: comment || undefined,
-      });
+      await api.updateDocument(docId, { status, notes: comment || undefined });
       fetchData();
     } catch (error) {
       console.error('Error updating document status:', error);
@@ -321,54 +302,77 @@ export default function ApplicationDetail() {
   if (loading) return <Layout><div className="text-center py-12"><div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto"></div></div></Layout>;
   if (!app) return <Layout><div className="text-center py-12">Application not found</div></Layout>;
 
-  // Backend status values: new, docs_pending, processing, approved, rejected, completed
   const BACKEND_STATUSES = ['new', 'docs_pending', 'processing', 'approved', 'rejected', 'completed'] as const;
-
   const documentTypeOptions = [...BACKEND_DOCUMENT_TYPES];
 
-  // Compute progress stage from documents according to rules:
-  // - If some documents uploaded and all pending -> Documents Pending (idx 1)
-  // - If all required documents uploaded -> Documents Received (idx 2)
-  // - If any approved or rejected -> Under Review (idx 3)
-  // - If >50% categories approved -> Processing (idx 4)
-  // - If >90% categories approved -> Final Documents (idx 5)
-  // - If all categories approved -> Approved (idx 6)
   const computeStageFromDocs = () => {
     const categories = documentTypeOptions.map(d => d.value);
     const totalRequired = categories.length;
-    if (totalRequired === 0) return -1; // no document-type information
-
+    if (totalRequired === 0) return -1;
     const categoryDocs = categories.map(cat => documents.filter(d => d.document_type === cat));
     const uploadedCategories = categoryDocs.filter(arr => arr.length > 0).length;
     const approvedCategories = categoryDocs.filter(arr => arr.some(d => d.status === 'approved')).length;
     const rejectedCategories = categoryDocs.filter(arr => arr.some(d => d.status === 'rejected')).length;
-    // categories where at least one file exists and all files are pending
     const pendingOnlyCategories = categoryDocs.filter(arr => arr.length > 0 && arr.every(d => d.status === 'pending')).length;
-
     const approvedPercent = approvedCategories / totalRequired;
-
-    if (approvedCategories === totalRequired) return 6; // Approved
-    if (approvedPercent > 0.9) return 5; // Final Documents
-    if (approvedPercent > 0.5) return 4; // Processing
-    if (approvedCategories > 0 || rejectedCategories > 0) return 3; // Under Review
-    if (uploadedCategories === totalRequired) return 2; // Documents Received
-    if (uploadedCategories > 0 && pendingOnlyCategories === uploadedCategories) return 1; // Documents Pending
-    return 0; // New
+    if (approvedCategories === totalRequired) return 6;
+    if (approvedPercent > 0.9) return 5;
+    if (approvedPercent > 0.5) return 4;
+    if (approvedCategories > 0 || rejectedCategories > 0) return 3;
+    if (uploadedCategories === totalRequired) return 2;
+    if (uploadedCategories > 0 && pendingOnlyCategories === uploadedCategories) return 1;
+    return 0;
   };
 
-  const statusToStageIndex: Record<string, number> = {
-    new: 0,
-    docs_pending: 1,
-    processing: 4,
-    approved: 6,
-    rejected: 7,
-    completed: 6,
-  };
-
-  // Prefer document-driven stage when we have document-type definitions; fall back to backend status otherwise.
+  const statusToStageIndex: Record<string, number> = { new: 0, docs_pending: 1, processing: 4, approved: 6, rejected: 7, completed: 6 };
   const docStage = computeStageFromDocs();
   const backendStage = statusToStageIndex[app.status] ?? 0;
   const currentStageIdx = docStage >= 0 ? Math.max(backendStage, docStage) : backendStage;
+
+  const openEditModal = () => {
+    setEditingApp({ ...app });
+    setShowEditModal(true);
+    setSaveError('');
+    setSaveSuccess('');
+  };
+
+  const handleAddExtraField = () => {
+    if (newExtraKey.trim() && editingApp) {
+      const newExtra = { ...(editingApp.extra_data || {}), [newExtraKey.trim()]: newExtraValue };
+      setEditingApp({ ...editingApp, extra_data: newExtra });
+      setNewExtraKey('');
+      setNewExtraValue('');
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingApp) return;
+    setSaving(true);
+    setSaveError('');
+    try {
+      await api.updateApplicant(editingApp.id, {
+        full_name: editingApp.full_name,
+        email: editingApp.email,
+        phone: editingApp.phone,
+        passport_number: editingApp.passport_number,
+        nationality: editingApp.nationality,
+        visa_type: editingApp.visa_type,
+        destination_country: editingApp.destination_country,
+        date_of_birth: editingApp.date_of_birth,
+        marital_status: editingApp.marital_status,
+        status: editingApp.status,
+        notes: editingApp.notes,
+        extra_data: editingApp.extra_data,
+      });
+      setSaveSuccess('Application updated successfully!');
+      fetchData();
+      setTimeout(() => { setShowEditModal(false); setEditingApp(null); setSaveSuccess(''); }, 1500);
+    } catch (err: any) {
+      setSaveError(err.message || 'Failed to update application');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <Layout>
@@ -377,13 +381,11 @@ export default function ApplicationDetail() {
       </button>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Main Content */}
         <div className="xl:col-span-2 space-y-6">
-          {/* Client Info Card */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
-                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                   <User className="h-5 w-5 text-orange-500" />
                   {app.full_name}
                 </h2>
@@ -392,7 +394,7 @@ export default function ApplicationDetail() {
                 </span>
               </div>
               {isAdmin && (
-                <button className="p-2 hover:bg-gray-100 rounded-lg">
+                <button onClick={openEditModal} className="p-2 hover:bg-gray-100 rounded-lg">
                   <Edit2 className="h-5 w-5 text-gray-500" />
                 </button>
               )}
@@ -408,7 +410,6 @@ export default function ApplicationDetail() {
             {app.notes && <p className="mt-4 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">{app.notes}</p>}
           </div>
 
-          {/* Custom Fields Section */}
           {(app.extra_data && Object.keys(app.extra_data).length > 0) || editingExtra ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex justify-between items-center mb-4">
@@ -417,108 +418,48 @@ export default function ApplicationDetail() {
                   Additional Information
                 </h3>
                 {isAdmin && !editingExtra && (
-                  <button 
-                    onClick={startEditingExtra}
-                    className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium text-sm"
-                  >
+                  <button onClick={startEditingExtra} className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium text-sm">
                     <Edit2 className="h-4 w-4" /> Edit
                   </button>
                 )}
               </div>
-
               {editingExtra ? (
                 <div className="space-y-4">
-                  {/* Display existing fields for editing */}
                   {Object.entries(extraDataEdit).map(([key, value]) => (
                     <div key={key} className="flex gap-3 items-start bg-gray-50 p-4 rounded-lg">
                       <div className="flex-1">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Field Name
-                        </label>
-                        <input
-                          type="text"
-                          value={key}
-                          disabled
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-                        />
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Field Name</label>
+                        <input type="text" value={key} disabled className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600" />
                       </div>
                       <div className="flex-[2]">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Value
-                        </label>
-                        <input
-                          type="text"
-                          value={value}
-                          onChange={(e) => updateExtraField(key, e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                        />
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Value</label>
+                        <input type="text" value={value} onChange={(e) => updateExtraField(key, e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500" />
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => removeExtraField(key)}
-                        className="p-2 text-gray-400 hover:text-red-500 transition mt-5"
-                      >
+                      <button type="button" onClick={() => removeExtraField(key)} className="p-2 text-gray-400 hover:text-red-500 transition mt-5">
                         <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
                   ))}
-
-                  {/* Add new field section */}
                   <div className="border-t pt-4">
                     <p className="text-sm text-gray-600 mb-3">Add a new custom field:</p>
                     <div className="flex gap-3 items-end">
                       <div className="flex-1">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Field Name
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Father's Name"
-                          value={newFieldKey}
-                          onChange={(e) => setNewFieldKey(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
-                        />
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Field Name</label>
+                        <input type="text" placeholder="e.g. Father's Name" value={newFieldKey} onChange={(e) => setNewFieldKey(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
                       </div>
                       <div className="flex-[2]">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Value
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. John Doe"
-                          value={newFieldValue}
-                          onChange={(e) => setNewFieldValue(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
-                        />
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Value</label>
+                        <input type="text" placeholder="e.g. John Doe" value={newFieldValue} onChange={(e) => setNewFieldValue(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
                       </div>
-                      <button
-                        type="button"
-                        onClick={addNewExtraField}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm"
-                      >
-                        Add
-                      </button>
+                      <button type="button" onClick={addNewExtraField} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm">Add</button>
                     </div>
                   </div>
-
-                  {/* Action buttons */}
                   <div className="flex justify-end gap-2 pt-4 border-t">
-                    <button
-                      onClick={cancelEditingExtra}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium text-sm"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={saveExtraData}
-                      className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium text-sm"
-                    >
-                      Save Changes
-                    </button>
+                    <button onClick={cancelEditingExtra} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium text-sm">Cancel</button>
+                    <button onClick={saveExtraData} className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium text-sm">Save Changes</button>
                   </div>
                 </div>
               ) : (
-                // Display mode
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                   {Object.entries(app.extra_data || {}).map(([key, value]) => (
                     <div key={key}>
@@ -531,66 +472,26 @@ export default function ApplicationDetail() {
             </div>
           ) : null}
 
-          {/* Document Requirements Section */}
           {applicantDocRequirements.length > 0 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center gap-2 mb-4">
                 <FileText className="h-5 w-5 text-blue-500" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Required Documents for {app?.visa_type || 'This Visa'}
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900">Required Documents for {app?.visa_type || 'This Visa'}</h3>
               </div>
               <div className="space-y-2">
                 {applicantDocRequirements.map((req) => {
-                  const uploadedDocs = documents.filter(
-                    (doc) => doc.document_type.toLowerCase().includes(req.document_name.toLowerCase())
-                  );
+                  const uploadedDocs = documents.filter((doc) => doc.document_type.toLowerCase().includes(req.document_name.toLowerCase()));
                   const hasApproved = uploadedDocs.some((d) => d.status === 'approved');
                   const hasUploaded = uploadedDocs.length > 0;
-
                   return (
-                    <div
-                      key={req.id}
-                      className={`flex items-center justify-between p-3 rounded-lg border transition ${
-                        hasApproved
-                          ? 'border-green-200 bg-green-50'
-                          : hasUploaded
-                          ? 'border-blue-200 bg-blue-50'
-                          : req.is_optional
-                          ? 'border-gray-200 bg-gray-50'
-                          : 'border-yellow-200 bg-yellow-50'
-                      }`}
-                    >
+                    <div key={req.id} className={`flex items-center justify-between p-3 rounded-lg border ${hasApproved ? 'border-green-200 bg-green-50' : hasUploaded ? 'border-blue-200 bg-blue-50' : req.is_optional ? 'border-gray-200 bg-gray-50' : 'border-yellow-200 bg-yellow-50'}`}>
                       <div className="flex items-center gap-3 flex-1">
-                        {hasApproved ? (
-                          <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                        ) : hasUploaded ? (
-                          <Clock className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                        ) : req.is_optional ? (
-                          <AlertCircle className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                        ) : (
-                          <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0" />
-                        )}
+                        {hasApproved ? <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" /> : hasUploaded ? <Clock className="h-5 w-5 text-blue-600 flex-shrink-0" /> : req.is_optional ? <AlertCircle className="h-5 w-5 text-gray-400 flex-shrink-0" /> : <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0" />}
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-gray-900">
-                            {req.document_name}
-                            {req.is_optional && (
-                              <span className="text-xs font-normal text-gray-500 ml-2">(Optional)</span>
-                            )}
-                          </p>
+                          <p className="text-sm font-medium text-gray-900">{req.document_name}{req.is_optional && <span className="text-xs font-normal text-gray-500 ml-2">(Optional)</span>}</p>
                         </div>
                       </div>
-                      <span
-                        className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap ml-2 ${
-                          hasApproved
-                            ? 'bg-green-100 text-green-700'
-                            : hasUploaded
-                            ? 'bg-blue-100 text-blue-700'
-                            : req.is_optional
-                            ? 'bg-gray-100 text-gray-600'
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}
-                      >
+                      <span className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap ml-2 ${hasApproved ? 'bg-green-100 text-green-700' : hasUploaded ? 'bg-blue-100 text-blue-700' : req.is_optional ? 'bg-gray-100 text-gray-600' : 'bg-yellow-100 text-yellow-700'}`}>
                         {hasApproved ? 'Approved' : hasUploaded ? 'Uploaded' : req.is_optional ? 'Optional' : 'Pending'}
                       </span>
                     </div>
@@ -600,7 +501,6 @@ export default function ApplicationDetail() {
             </div>
           )}
 
-          {/* Progress Timeline */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Application Progress</h3>
             <div className="relative">
@@ -610,11 +510,7 @@ export default function ApplicationDetail() {
               <div className="relative flex justify-between">
                 {STATUS_STAGES.map((stage, idx) => (
                   <div key={stage} className="flex flex-col items-center" style={{ width: `${100 / STATUS_STAGES.length}%` }}>
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium z-10 border-2 ${
-                      idx < currentStageIdx ? 'bg-orange-500 border-orange-500 text-white' :
-                      idx === currentStageIdx ? 'bg-orange-500 border-orange-500 text-white ring-4 ring-orange-100' :
-                      'bg-white border-gray-300 text-gray-400'
-                    }`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium z-10 border-2 ${idx < currentStageIdx ? 'bg-orange-500 border-orange-500 text-white' : idx === currentStageIdx ? 'bg-orange-500 border-orange-500 text-white ring-4 ring-orange-100' : 'bg-white border-gray-300 text-gray-400'}`}>
                       {idx < currentStageIdx ? <Check className="h-5 w-5" /> : idx + 1}
                     </div>
                     <span className="mt-2 text-xs text-center text-gray-600 hidden md:block max-w-[80px]">{stage}</span>
@@ -625,8 +521,7 @@ export default function ApplicationDetail() {
             {isAdmin && (
               <div className="mt-6 pt-4 border-t">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Update Status</label>
-                <select value={app.status} onChange={(e) => updateStatus(e.target.value)} 
-                  className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500">
+                <select value={app.status} onChange={(e) => updateStatus(e.target.value)} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500">
                   <option value="new">New</option>
                   <option value="docs_pending">Docs Pending</option>
                   <option value="processing">Processing</option>
@@ -638,7 +533,6 @@ export default function ApplicationDetail() {
             )}
           </div>
 
-          {/* Tabs */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="flex border-b">
               {[
@@ -647,13 +541,7 @@ export default function ApplicationDetail() {
                 { key: 'history', label: 'Status History', icon: History, count: statusHistory.length },
                 { key: 'payments', label: 'Payments', icon: DollarSign, count: payments.length }
               ].map(tab => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key as typeof activeTab)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition ${
-                    activeTab === tab.key ? 'text-orange-600 border-b-2 border-orange-500 bg-orange-50' : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
+                <button key={tab.key} onClick={() => setActiveTab(tab.key as typeof activeTab)} className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium transition ${activeTab === tab.key ? 'text-orange-600 border-b-2 border-orange-500 bg-orange-50' : 'text-gray-500 hover:text-gray-700'}`}>
                   <tab.icon className="h-4 w-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
                   <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{tab.count}</span>
@@ -662,64 +550,27 @@ export default function ApplicationDetail() {
             </div>
 
             <div className="p-6">
-              {/* Documents Tab */}
               {activeTab === 'documents' && (
                 <div>
-                  {/* Upload Area */}
                   <div className="mb-6">
                     <div className="flex gap-4 mb-4">
-                      <select
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="flex-1 border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500"
-                      >
+                      <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="flex-1 border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500">
                         <option value="">Select document type...</option>
-                        {documentTypeOptions.map(({ value, label }) => (
-                          <option key={value} value={value}>{label}</option>
-                        ))}
+                        {documentTypeOptions.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
                       </select>
-                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition ${
-                        selectedCategory ? 'bg-orange-500 text-white hover:bg-orange-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      }`}>
+                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition ${selectedCategory ? 'bg-orange-500 text-white hover:bg-orange-600' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>
                         <Upload className="h-4 w-4" /> Upload
-                        <input 
-                          ref={fileInputRef}
-                          type="file" 
-                          className="hidden" 
-                          onChange={handleFileChange}
-                          disabled={!selectedCategory || uploading}
-                          multiple
-                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                        />
+                        <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} disabled={!selectedCategory || uploading} multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
                       </label>
                     </div>
-
-                    {/* Drag & Drop Zone */}
-                    <div
-                      onDragEnter={handleDrag}
-                      onDragLeave={handleDrag}
-                      onDragOver={handleDrag}
-                      onDrop={handleDrop}
-                      className={`border-2 border-dashed rounded-xl p-8 text-center transition ${
-                        dragActive ? 'border-orange-500 bg-orange-50' : 'border-gray-300'
-                      }`}
-                    >
+                    <div onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop} className={`border-2 border-dashed rounded-xl p-8 text-center transition ${dragActive ? 'border-orange-500 bg-orange-50' : 'border-gray-300'}`}>
                       {uploading ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <RefreshCw className="h-5 w-5 animate-spin text-orange-500" />
-                          <span className="text-gray-600">Uploading...</span>
-                        </div>
+                        <div className="flex items-center justify-center gap-2"><RefreshCw className="h-5 w-5 animate-spin text-orange-500" /><span className="text-gray-600">Uploading...</span></div>
                       ) : (
-                        <>
-                          <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                          <p className="text-gray-600">Drag and drop files here</p>
-                          <p className="text-xs text-gray-400 mt-1">PDF, JPG, PNG, DOC, DOCX - Max 50MB</p>
-                        </>
+                        <><Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" /><p className="text-gray-600">Drag and drop files here</p><p className="text-xs text-gray-400 mt-1">PDF, JPG, PNG, DOC, DOCX - Max 50MB</p></>
                       )}
                     </div>
                   </div>
-
-                  {/* Document Checklist */}
                   <h4 className="font-medium text-gray-900 mb-3">Document Checklist</h4>
                   <div className="space-y-2">
                     {documentTypeOptions.map(({ value, label }) => {
@@ -727,28 +578,18 @@ export default function ApplicationDetail() {
                       const hasApproved = catDocs.some(d => d.status === 'approved');
                       const hasUploaded = catDocs.length > 0;
                       return (
-                        <div key={value} className={`flex items-center justify-between p-3 rounded-lg border ${
-                          hasApproved ? 'border-green-200 bg-green-50' : hasUploaded ? 'border-blue-200 bg-blue-50' : 'border-gray-200'
-                        }`}>
+                        <div key={value} className={`flex items-center justify-between p-3 rounded-lg border ${hasApproved ? 'border-green-200 bg-green-50' : hasUploaded ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
                           <div className="flex items-center gap-3">
-                            {hasApproved ? <CheckCircle className="h-5 w-5 text-green-600" /> :
-                             hasUploaded ? <Clock className="h-5 w-5 text-blue-600" /> :
-                             <AlertCircle className="h-5 w-5 text-gray-400" />}
+                            {hasApproved ? <CheckCircle className="h-5 w-5 text-green-600" /> : hasUploaded ? <Clock className="h-5 w-5 text-blue-600" /> : <AlertCircle className="h-5 w-5 text-gray-400" />}
                             <span className="text-sm font-medium text-gray-700">{label}</span>
                           </div>
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            hasApproved ? 'bg-green-100 text-green-700' :
-                            hasUploaded ? 'bg-blue-100 text-blue-700' :
-                            'bg-gray-100 text-gray-500'
-                          }`}>
+                          <span className={`text-xs px-2 py-1 rounded-full ${hasApproved ? 'bg-green-100 text-green-700' : hasUploaded ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
                             {hasApproved ? 'Approved' : hasUploaded ? 'Uploaded' : 'Pending'}
                           </span>
                         </div>
                       );
                     })}
                   </div>
-
-                  {/* Document List */}
                   {documents.length > 0 && (
                     <div className="mt-6">
                       <h4 className="font-medium text-gray-900 mb-3">Uploaded Documents</h4>
@@ -763,50 +604,19 @@ export default function ApplicationDetail() {
                                   <span>{doc.document_type}</span>
                                   <span>-</span>
                                   <span>{new Date(doc.uploaded_at).toLocaleDateString()}</span>
-                                  <span className={`px-1.5 py-0.5 rounded ${getDocStatusColor(doc.status)}`}>
-                                    {doc.status}
-                                  </span>
+                                  <span className={`px-1.5 py-0.5 rounded ${getDocStatusColor(doc.status)}`}>{doc.status}</span>
                                 </div>
-                                {doc.notes && (
-                                  <p className="text-xs text-red-600 mt-1">{doc.notes}</p>
-                                )}
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               {isAdmin && doc.status === 'pending' && (
                                 <>
-                                  <button onClick={() => updateDocStatus(doc.id, 'approved')} 
-                                    className="p-1.5 text-green-600 hover:bg-green-100 rounded" title="Approve">
-                                    <Check className="h-4 w-4" />
-                                  </button>
-                                  <button onClick={() => {
-                                    const comment = prompt('Rejection reason:');
-                                    if (comment) updateDocStatus(doc.id, 'rejected', comment);
-                                  }} className="p-1.5 text-red-600 hover:bg-red-100 rounded" title="Reject">
-                                    <X className="h-4 w-4" />
-                                  </button>
+                                  <button onClick={() => updateDocStatus(doc.id, 'approved')} className="p-1.5 text-green-600 hover:bg-green-100 rounded"><Check className="h-4 w-4" /></button>
+                                  <button onClick={() => { const comment = prompt('Rejection reason:'); if (comment) updateDocStatus(doc.id, 'rejected', comment); }} className="p-1.5 text-red-600 hover:bg-red-100 rounded"><X className="h-4 w-4" /></button>
                                 </>
                               )}
-                              <button onClick={() => downloadFile(doc)} className="p-1.5 text-orange-500 hover:bg-orange-100 rounded">
-                                <Download className="h-4 w-4" />
-                              </button>
-                              {doc.status === 'rejected' && !isAdmin && (
-                                <label className="p-1.5 text-blue-500 hover:bg-blue-100 rounded cursor-pointer" title="Re-upload">
-                                  <RefreshCw className="h-4 w-4" />
-                                  <input type="file" className="hidden" onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      await deleteDocument(doc);
-                                      await uploadFile(file, doc.document_type);
-                                    }
-                                  }} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
-                                </label>
-                              )}
-                              {isAdmin && (
-                                <button onClick={() => deleteDocument(doc)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded">
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              )}
+                              <button onClick={() => downloadFile(doc)} className="p-1.5 text-orange-500 hover:bg-orange-100 rounded"><Download className="h-4 w-4" /></button>
+                              {isAdmin && <button onClick={() => deleteDocument(doc)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded"><Trash2 className="h-4 w-4" /></button>}
                             </div>
                           </div>
                         ))}
@@ -816,123 +626,57 @@ export default function ApplicationDetail() {
                 </div>
               )}
 
-              {/* Messages Tab */}
               {activeTab === 'messages' && (
                 <div>
                   <div className="h-80 overflow-y-auto mb-4 space-y-3">
-                    {messages.length === 0 ? (
-                      <p className="text-gray-500 text-center py-8">No messages yet</p>
-                    ) : (
-                      messages.map(msg => (
-                        <div key={msg.id} className={`p-3 rounded-lg ${msg.sender_id === user?.id ? 'bg-orange-50 ml-8' : 'bg-gray-100 mr-8'}`}>
-                          <p className="text-sm text-gray-900">{msg.content}</p>
-                          <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                            <Clock className="h-3 w-3" />{new Date(msg.created_at).toLocaleString()}
-                          </p>
-                        </div>
-                      ))
-                    )}
+                    {messages.length === 0 ? <p className="text-gray-500 text-center py-8">No messages yet</p> : messages.map(msg => (
+                      <div key={msg.id} className={`p-3 rounded-lg ${msg.sender_id === user?.id ? 'bg-orange-50 ml-8' : 'bg-gray-100 mr-8'}`}>
+                        <p className="text-sm text-gray-900">{msg.content}</p>
+                        <p className="text-xs text-gray-400 mt-1">{new Date(msg.created_at).toLocaleString()}</p>
+                      </div>
+                    ))}
                   </div>
                   <div className="flex gap-2">
-                    <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} 
-                      onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                      placeholder="Type a message..." className="flex-1 border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" />
-                    <button onClick={sendMessage} className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
-                      <Send className="h-5 w-5" />
-                    </button>
+                    <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder="Type a message..." className="flex-1 border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" />
+                    <button onClick={sendMessage} className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"><Send className="h-5 w-5" /></button>
                   </div>
                 </div>
               )}
 
-              {/* Status History Tab */}
               {activeTab === 'history' && (
                 <div className="space-y-3">
-                  {statusHistory.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No status history</p>
-                  ) : (
-                    statusHistory.map(h => (
-                      <div key={h.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                        <History className="h-5 w-5 text-gray-400 mt-0.5" />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            {h.old_status && <span className="text-sm text-gray-500">{h.old_status}</span>}
-                            {h.old_status && <span className="text-gray-400">-&gt;</span>}
-                            <span className={`text-sm font-medium px-2 py-0.5 rounded ${getStatusColor(h.new_status)}`}>{h.new_status}</span>
-                          </div>
-                          {h.notes && <p className="text-xs text-gray-500 mt-1">{h.notes}</p>}
-                          <p className="text-xs text-gray-400 mt-1">{new Date(h.created_at).toLocaleString()}</p>
+                  {statusHistory.length === 0 ? <p className="text-gray-500 text-center py-8">No status history</p> : statusHistory.map(h => (
+                    <div key={h.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                      <History className="h-5 w-5 text-gray-400 mt-0.5" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          {h.old_status && <span className="text-sm text-gray-500">{h.old_status}</span>}
+                          {h.old_status && <span className="text-gray-400">{'>'}</span>}
+                          <span className={`text-sm font-medium px-2 py-0.5 rounded ${getStatusColor(h.new_status)}`}>{h.new_status}</span>
                         </div>
+                        {h.notes && <p className="text-xs text-gray-500 mt-1">{h.notes}</p>}
+                        <p className="text-xs text-gray-400 mt-1">{new Date(h.created_at).toLocaleString()}</p>
                       </div>
-                    ))
-                  )}
+                    </div>
+                  ))}
                 </div>
               )}
 
-              {/* Payments Tab */}
               {activeTab === 'payments' && (
                 <div>
                   {isAdmin && (
                     <div className="mb-4 flex gap-2">
-                      <button 
-                        onClick={async () => {
-                          const amount = prompt('Enter amount (USD):');
-                          if (!amount || isNaN(parseFloat(amount))) return;
-                          const invoiceNum = `INV-${Date.now().toString(36).toUpperCase()}`;
-                          await api.createPayment({
-                            applicant: app.id,
-                            amount: parseFloat(amount),
-                            currency: 'USD',
-                            status: 'unpaid',
-                            invoice_number: invoiceNum,
-                          });
-                          fetchData();
-                        }}
-                        className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-sm"
-                      >
-                        Create Invoice
-                      </button>
+                      <button onClick={async () => { const amount = prompt('Enter amount (USD):'); if (!amount || isNaN(parseFloat(amount))) return; const invoiceNum = `INV-${Date.now().toString(36).toUpperCase()}`; await api.createPayment({ applicant: app.id, amount: parseFloat(amount), currency: 'USD', status: 'unpaid', invoice_number: invoiceNum }); fetchData(); }} className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-sm">Create Invoice</button>
                     </div>
                   )}
-                  {payments.length === 0 ? (
-                    <div className="text-center py-8">
-                      <DollarSign className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500">No payment records</p>
-                    </div>
-                  ) : (
+                  {payments.length === 0 ? <div className="text-center py-8"><DollarSign className="h-12 w-12 text-gray-300 mx-auto mb-3" /><p className="text-gray-500">No payment records</p></div> : (
                     <div className="space-y-3">
                       {payments.map(pay => (
                         <div key={pay.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-gray-900">Payment</p>
-                            <p className="text-sm text-gray-500">{pay.invoice_number || 'No invoice'}</p>
-                            {pay.payment_date && <p className="text-xs text-gray-400">Date: {new Date(pay.payment_date).toLocaleDateString()}</p>}
-                          </div>
+                          <div><p className="font-medium text-gray-900">Payment</p><p className="text-sm text-gray-500">{pay.invoice_number || 'No invoice'}</p></div>
                           <div className="text-right flex items-center gap-3">
-                            <div>
-                              <p className="text-lg font-bold text-gray-900">{pay.currency} {typeof pay.amount === 'number' ? pay.amount.toLocaleString() : pay.amount}</p>
-                              <span className={`text-xs px-2 py-1 rounded-full ${
-                                pay.status === 'paid' ? 'bg-green-100 text-green-700' :
-                                pay.status === 'unpaid' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-gray-100 text-gray-700'
-                              }`}>
-                                {pay.status}
-                              </span>
-                            </div>
-                            {isAdmin && pay.status === 'unpaid' && (
-                              <button 
-                                onClick={async () => {
-                                  try {
-                                    await api.updatePayment(pay.id, { status: 'paid', payment_date: new Date().toISOString().split('T')[0] });
-                                    fetchData();
-                                  } catch (error) {
-                                    console.error('Error updating payment:', error);
-                                  }
-                                }}
-                                className="px-3 py-1.5 bg-green-500 text-white rounded text-xs hover:bg-green-600"
-                              >
-                                Mark Paid
-                              </button>
-                            )}
+                            <div><p className="text-lg font-bold text-gray-900">{pay.currency} {typeof pay.amount === 'number' ? pay.amount.toLocaleString() : pay.amount}</p><span className={`text-xs px-2 py-1 rounded-full ${pay.status === 'paid' ? 'bg-green-100 text-green-700' : pay.status === 'unpaid' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>{pay.status}</span></div>
+                            {isAdmin && pay.status === 'unpaid' && <button onClick={async () => { try { await api.updatePayment(pay.id, { status: 'paid', payment_date: new Date().toISOString().split('T')[0] }); fetchData(); } catch (error) { console.error('Error updating payment:', error); } }} className="px-3 py-1.5 bg-green-500 text-white rounded text-xs hover:bg-green-600">Mark Paid</button>}
                           </div>
                         </div>
                       ))}
@@ -944,51 +688,123 @@ export default function ApplicationDetail() {
           </div>
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-6">
-          {/* Quick Stats */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
             <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Status</span>
-                <span className="font-medium text-gray-900">{app.status}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Documents</span>
-                <span className="font-medium text-gray-900">{documents.filter(d => d.status === 'approved').length}/{documents.length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Created</span>
-                <span className="text-sm text-gray-900">{new Date(app.created_at).toLocaleDateString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Last Updated</span>
-                <span className="text-sm text-gray-900">{new Date(app.updated_at).toLocaleDateString()}</span>
-              </div>
+              <div className="flex justify-between"><span className="text-gray-500">Status</span><span className="font-medium text-gray-900">{app.status}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Documents</span><span className="font-medium text-gray-900">{documents.filter(d => d.status === 'approved').length}/{documents.length}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Created</span><span className="text-sm text-gray-900">{new Date(app.created_at).toLocaleDateString()}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Last Updated</span><span className="text-sm text-gray-900">{new Date(app.updated_at).toLocaleDateString()}</span></div>
             </div>
           </div>
 
-          {/* Actions */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
             <div className="space-y-2">
-              <button 
-                onClick={() => { setActiveTab('documents'); setSelectedCategory(documentTypeOptions[0]?.value ?? ''); }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-              >
-                <Upload className="h-4 w-4" /> Upload Document
-              </button>
-              <button
-                onClick={() => setActiveTab('messages')}
-                className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-              >
-                <MessageSquare className="h-4 w-4" /> Send Message
-              </button>
+              <button onClick={() => { setActiveTab('documents'); setSelectedCategory(documentTypeOptions[0]?.value ?? ''); }} className="w-full flex items-center justify-center gap-2 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"><Upload className="h-4 w-4" /> Upload Document</button>
+              <button onClick={() => setActiveTab('messages')} className="w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"><MessageSquare className="h-4 w-4" /> Send Message</button>
             </div>
           </div>
         </div>
       </div>
+
+      {showEditModal && editingApp && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Edit Application</h2>
+              <button onClick={() => { setShowEditModal(false); setEditingApp(null); }} className="p-2 hover:bg-gray-100 rounded-lg"><X className="h-5 w-5 text-gray-500" /></button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              {saveSuccess && <div className="flex items-center gap-2 p-3 bg-green-50 text-green-700 rounded-lg">{saveSuccess}</div>}
+              {saveError && <div className="p-3 bg-red-50 text-red-700 rounded-lg">{saveError}</div>}
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input type="text" value={editingApp.full_name || ''} onChange={(e) => setEditingApp({ ...editingApp, full_name: e.target.value })} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" value={editingApp.email || ''} onChange={(e) => setEditingApp({ ...editingApp, email: e.target.value })} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input type="tel" value={editingApp.phone || ''} onChange={(e) => setEditingApp({ ...editingApp, phone: e.target.value })} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Passport Number</label>
+                <input type="text" value={editingApp.passport_number || ''} onChange={(e) => setEditingApp({ ...editingApp, passport_number: e.target.value })} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
+                <input type="text" value={editingApp.nationality || ''} onChange={(e) => setEditingApp({ ...editingApp, nationality: e.target.value })} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Visa Type</label>
+                <input type="text" value={editingApp.visa_type || ''} onChange={(e) => setEditingApp({ ...editingApp, visa_type: e.target.value })} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Destination Country</label>
+                <input type="text" value={editingApp.destination_country || ''} onChange={(e) => setEditingApp({ ...editingApp, destination_country: e.target.value })} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                <input type="date" value={editingApp.date_of_birth || ''} onChange={(e) => setEditingApp({ ...editingApp, date_of_birth: e.target.value })} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+                <input type="text" value={editingApp.marital_status || ''} onChange={(e) => setEditingApp({ ...editingApp, marital_status: e.target.value })} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select value={editingApp.status || 'new'} onChange={(e) => setEditingApp({ ...editingApp, status: e.target.value })} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500">
+                  <option value="new">New</option>
+                  <option value="docs_pending">Docs Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea value={editingApp.notes || ''} onChange={(e) => setEditingApp({ ...editingApp, notes: e.target.value })} className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:ring-2 focus:ring-orange-500" rows={3} />
+              </div>
+              
+              <div className="border-t pt-4 mt-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Additional Information</h3>
+                {Object.entries(editingApp.extra_data || {}).map(([key, value]) => (
+                  <div key={key} className="flex gap-3 items-start mb-3 bg-gray-50 p-3 rounded-lg">
+                    <div className="flex-1">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Field Name</label>
+                      <input type="text" value={key} disabled className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 text-sm" />
+                    </div>
+                    <div className="flex-[2]">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Value</label>
+                      <input type="text" value={typeof value === 'object' ? JSON.stringify(value) : String(value || '')} onChange={(e) => { const newExtra = { ...editingApp.extra_data }; newExtra[key] = e.target.value; setEditingApp({ ...editingApp, extra_data: newExtra }); }} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+                    </div>
+                  </div>
+                ))}
+                <div className="border-t pt-3 mt-3">
+                  <p className="text-xs text-gray-600 mb-2">Add new custom field:</p>
+                  <div className="flex gap-2">
+                    <input type="text" placeholder="Field name" value={newExtraKey} onChange={(e) => setNewExtraKey(e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+                    <input type="text" placeholder="Value" value={newExtraValue} onChange={(e) => setNewExtraValue(e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm" />
+                    <button type="button" onClick={handleAddExtraField} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm">Add</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 p-6 border-t">
+              <button onClick={() => { setShowEditModal(false); setEditingApp(null); }} className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
+              <button onClick={handleSaveEdit} disabled={saving} className="flex-1 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50">{saving ? 'Saving...' : 'Save Changes'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }

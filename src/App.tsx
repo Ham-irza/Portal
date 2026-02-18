@@ -29,6 +29,8 @@ import PartnerLifecycle from '@/pages/PartnerLifecycle';
 import TrainingCenter from '@/pages/TrainingCenter';
 import CobrandedAssets from '@/pages/CobrandedAssets';
 import Gamification from '@/pages/Gamification';
+import AcceptInvitation from '@/pages/AcceptInvitation';
+import VerifyEmail from '@/pages/VerifyEmail';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -81,6 +83,8 @@ function AppRoutes() {
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       <Route path="/onboarding" element={<PartnerOnboarding />} />
+      <Route path="/accept-invitation" element={<PublicRoute><AcceptInvitation /></PublicRoute>} />
+      <Route path="/verify-email" element={<PublicRoute><VerifyEmail /></PublicRoute>} />
       
       {/* Partner / Applicant Routes */}
       <Route path="/applicant" element={<PrivateRoute><ApplicantDashboard /></PrivateRoute>} />
