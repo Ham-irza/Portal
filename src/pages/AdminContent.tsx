@@ -250,7 +250,7 @@ export default function AdminContent() {
         {showResourceModal && (
           <ResourceModal
             resource={editingResource}
-            userId={user?.id}
+            userId={user?.id ? String(user.id) : ""}
             onSave={() => { setShowResourceModal(false); loadData(); }}
             onClose={() => { setShowResourceModal(false); setEditingResource(null); }}
           />
