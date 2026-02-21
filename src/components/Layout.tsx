@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage, LANGUAGES } from '@/contexts/LanguageContext';
 import { 
   LayoutDashboard, FileText, Users, Settings, LogOut, Menu, X, 
-  MessageSquare, Building, UserCheck, BarChart3, FolderOpen, Bell,
+  Building, UserCheck, BarChart3, FolderOpen, Bell,
   DollarSign, BookOpen, HeadphonesIcon, PieChart, FileEdit, Shield,
   Briefcase, Target, Award, Palette, Globe, GitBranch, FileCheck,
   Database, TrendingUp, FileSpreadsheet
@@ -24,12 +24,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const partnerNavItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/applications', label: 'Applicants', icon: FileText },
-    { path: '/deals', label: 'Deal Registration', icon: Briefcase },
+    { path: '/deals', label: 'Deals', icon: Briefcase },
     { path: '/referrals', label: 'Referrals', icon: Users },
     { path: '/commissions', label: 'Commissions', icon: DollarSign },
     { path: '/support', label: 'Support', icon: HeadphonesIcon },
     { path: '/reports', label: 'Reports', icon: BarChart3 },
-    { path: '/messages', label: 'Messages', icon: MessageSquare },
     { path: '/settings', label: 'Settings', icon: Settings },
   ];
 

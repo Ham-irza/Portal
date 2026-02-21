@@ -8,7 +8,6 @@ import ApplicantDashboard from '@/pages/ApplicantDashboard';
 import Applications from '@/pages/Applications';
 import NewApplication from '@/pages/NewApplication';
 import ApplicationDetail from '@/pages/ApplicationDetail';
-import Messages from '@/pages/Messages';
 import Settings from '@/pages/Settings';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AdminPartners from '@/pages/AdminPartners';
@@ -25,6 +24,7 @@ import AdminAnalytics from '@/pages/AdminAnalytics';
 import AdminTickets from '@/pages/AdminTickets';
 // Phase 2 imports
 import DealRegistration from '@/pages/DealRegistration';
+import Deals from '@/pages/Deals';
 import PartnerLifecycle from '@/pages/PartnerLifecycle';
 import TrainingCenter from '@/pages/TrainingCenter';
 import CobrandedAssets from '@/pages/CobrandedAssets';
@@ -93,7 +93,7 @@ function AppRoutes() {
       <Route path="/applications" element={<PrivateRoute><Applications /></PrivateRoute>} />
       <Route path="/applications/new" element={<PrivateRoute><NewApplication /></PrivateRoute>} />
       <Route path="/applications/:id" element={<PrivateRoute><ApplicationDetail /></PrivateRoute>} />
-      <Route path="/deals" element={<PrivateRoute><DealRegistration /></PrivateRoute>} />
+      <Route path="/deals" element={<PrivateRoute><Deals /></PrivateRoute>} />
       <Route path="/referrals" element={<PrivateRoute><Referrals /></PrivateRoute>} />
       <Route path="/commissions" element={<PrivateRoute><Commissions /></PrivateRoute>} />
       <Route path="/training" element={<PrivateRoute><TrainingCenter /></PrivateRoute>} />
@@ -102,14 +102,13 @@ function AppRoutes() {
       <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
       <Route path="/achievements" element={<PrivateRoute><Gamification /></PrivateRoute>} />
       <Route path="/support" element={<PrivateRoute><SupportTickets /></PrivateRoute>} />
-      <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
       <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
       
       {/* Admin Routes */}
       <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       <Route path="/admin/partners" element={<AdminRoute><AdminPartners /></AdminRoute>} />
       <Route path="/admin/referrals" element={<AdminRoute><Referrals /></AdminRoute>} />
-      <Route path="/admin/deals" element={<AdminRoute><DealRegistration /></AdminRoute>} />
+      <Route path="/admin/deals" element={<AdminRoute><Deals /></AdminRoute>} />
       <Route path="/admin/tickets" element={<AdminRoute><AdminTickets /></AdminRoute>} />
       <Route path="/admin/analytics" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
       <Route path="/admin/team" element={<AdminRoute><AdminTeam /></AdminRoute>} />

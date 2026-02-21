@@ -147,7 +147,7 @@ export default function Dashboard() {
     { label: 'Add Applicant', icon: UserPlus, path: '/applications/new', color: 'bg-orange-500 hover:bg-orange-600' },
     { label: 'Upload Documents', icon: Upload, path: '/applications', color: 'bg-blue-500 hover:bg-blue-600' },
     { label: 'View All', icon: Eye, path: '/applications', color: 'bg-charcoal hover:bg-charcoal-dark' },
-    { label: 'Contact Support', icon: Headphones, path: '/messages', color: 'bg-green-500 hover:bg-green-600' },
+    { label: 'Contact Support', icon: Headphones, path: '/support', color: 'bg-green-500 hover:bg-green-600' },
   ];
 
   if (loading) {

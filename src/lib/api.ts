@@ -707,6 +707,88 @@ class ApiClient {
       body: JSON.stringify({ partner_id: partnerId, role }),
     });
   }
+
+  // ============ DEALS API ============
+  
+  // Get all deals (filtered by partner automatically)
+  async getDeals(params?: {
+    search?: string;
+    status?: string;
+    payment_status?: string;
+    from_date?: string;
+    to_date?: string;
+  }): Promise<any[]> {
+    const queryParams = new URLSearchParams();
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.payment_status) queryParams.append('payment_status', params.payment_status);
+    if (params?.from_date) queryParams.append('from_date', params.from_date);
+    if (params?.to_date) queryParams.append('to_date', params.to_date);
+    
+    const queryString = queryParams.toString();
+    const url = queryString ? `/api/deals/?${queryString}` : '/api/deals/';
+    return this.request(url);
+  }
+
+  // Get single deal
+  async getDeal(id: number): Promise<any> {
+    return this.request(`/api/deals/${id}/`);
+  }
+
+  // Create a new deal
+  async createDeal(data: {
+    applicant: number;
+    visa_type?: string;
+    destination_country?: string;
+    amount?: number;
+    currency?: string;
+    partner_notes?: string;
+  }): Promise<any> {
+    return this.request('/api/deals/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Update a deal (partial)
+  async updateDeal(id: number, data: any): Promise<any> {
+    return this.request(`/api/deals/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Delete a deal
+  async deleteDeal(id: number): Promise<void> {
+    return this.request(`/api/deals/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Get deal statistics
+  async getDealStats(): Promise<any> {
+    return this.request('/api/deals-stats/');
+  }
+
+  // Get applicants for deal creation (partners can only see their own)
+  async getApplicantsForDeal(): Promise<any[]> {
+    // Use the same endpoint but it filters by partner automatically
+    const data = await this.request('/api/applicants/');
+    return Array.isArray(data) ? data : ((data as any)?.results || []);
+  }
+
+  // Deal Notes
+  async getDealNotes(dealId: number): Promise<any[]> {
+    const data = await this.request(`/api/deal-notes/?deal=${dealId}`);
+    return Array.isArray(data) ? data : ((data as any)?.results || []);
+  }
+
+  async createDealNote(dealId: number, content: string, isInternal: boolean = false): Promise<any> {
+    return this.request('/api/deal-notes/', {
+      method: 'POST',
+      body: JSON.stringify({ deal: dealId, content, is_internal: isInternal }),
+    });
+  }
 }
 
 
