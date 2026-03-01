@@ -32,6 +32,26 @@ import Gamification from '@/pages/Gamification';
 import AcceptInvitation from '@/pages/AcceptInvitation';
 import VerifyEmail from '@/pages/VerifyEmail';
 
+// 1. ADD THIS NEW COMPONENT TO RENDER YOUR HTML FILE
+function LandingPage() {
+  return (
+    <iframe 
+      src="/landing.html" 
+      style={{ 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%', 
+        height: '100%', 
+        border: 'none',
+        margin: 0,
+        padding: 0
+      }} 
+      title="Hainan Partnership Landing"
+    />
+  );
+}
+
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return (
@@ -79,6 +99,9 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
+      {/* 2. CHANGE THIS ROUTE FROM <Navigate to="/dashboard" /> to <LandingPage /> */}
+      <Route path="/" element={<LandingPage />} />
+
       {/* Public Routes */}
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
@@ -115,9 +138,8 @@ function AppRoutes() {
       <Route path="/admin/documents" element={<AdminRoute><AdminDocuments /></AdminRoute>} />
       <Route path="/admin/reports" element={<AdminRoute><AdminReports /></AdminRoute>} />
       
-      {/* Default Routes */}
-      <Route path="/" element={<Navigate to="/dashboard" />} />
-      <Route path="*" element={<Navigate to="/dashboard" />} />
+      {/* Catch-all fallback */}
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 }
