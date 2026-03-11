@@ -1,12 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
-import { SERVICE_TYPES } from '@/lib/supabase';
 import Layout from '@/components/Layout';
 import { 
   ArrowLeft, Save, User, Mail, Phone, Globe, FileText, Calendar, 
-  AlertCircle, Plus, Trash2, Heart, MapPin
+  AlertCircle, Plus, Trash2, Heart, MapPin, CheckCircle, Info
 } from 'lucide-react';
 
 interface CustomField {
@@ -14,11 +13,30 @@ interface CustomField {
   value: string;
 }
 
+interface RequiredDocument {
+  id: number;
+  title: string;
+  optional: boolean;
+}
+
+interface ServiceType {
+  id: number;
+  key: string;
+  name: string;
+  description?: string;
+  requirements?: RequiredDocument[]; // The nested documents from your Django backend
+}
+
 export default function NewApplication() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // New state for dynamic visa types
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -29,13 +47,35 @@ export default function NewApplication() {
     date_of_birth: '',
     gender: 'M' as 'M' | 'F' | 'O',
     marital_status: 'single' as 'single' | 'married' | 'divorced' | 'widowed',
-    visa_type: SERVICE_TYPES[0],
+    visa_type: '', // Starts empty, will be set when services load
     destination_country: 'UAE',
     travel_date: '',
     notes: ''
   });
 
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
+
+  // Fetch Service Types on component mount
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await api.getServiceTypes();
+        const servicesList = Array.isArray(res) ? res : ((res as any)?.results || []);
+        setServiceTypes(servicesList);
+        
+        // Auto-select the first visa type if available
+        if (servicesList.length > 0) {
+          setFormData(prev => ({ ...prev, visa_type: servicesList[0].name }));
+        }
+      } catch (err) {
+        console.error('Failed to load visa types:', err);
+        setError('Could not load visa types. Please refresh the page.');
+      } finally {
+        setLoadingServices(false);
+      }
+    };
+    fetchServices();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -66,12 +106,15 @@ export default function NewApplication() {
       setError('Phone number is required');
       return;
     }
+    if (!formData.visa_type) {
+      setError('Please select a visa type');
+      return;
+    }
 
     setLoading(true);
     setError('');
 
     try {
-      // Convert custom fields to extra_data object
       const extraData = customFields.reduce((acc, field) => {
         if (field.key.trim()) {
           acc[field.key.trim()] = field.value;
@@ -96,7 +139,6 @@ export default function NewApplication() {
         status: 'new',
       };
 
-      // Add extra_data only if there are custom fields
       if (Object.keys(extraData).length > 0) {
         applicantData.extra_data = extraData;
       }
@@ -114,6 +156,9 @@ export default function NewApplication() {
       setLoading(false);
     }
   };
+
+  // Find the currently selected service to display its requirements
+  const selectedService = serviceTypes.find(s => s.name === formData.visa_type);
 
   return (
     <Layout>
@@ -189,7 +234,7 @@ export default function NewApplication() {
                   name="gender"
                   value={formData.gender}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white"
                 >
                   <option value="M">Male</option>
                   <option value="F">Female</option>
@@ -217,7 +262,7 @@ export default function NewApplication() {
                     name="marital_status"
                     value={formData.marital_status}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white"
                   >
                     <option value="single">Single</option>
                     <option value="married">Married</option>
@@ -279,17 +324,24 @@ export default function NewApplication() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Visa Type *</label>
-                <select
-                  name="visa_type"
-                  value={formData.visa_type}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  required
-                >
-                  {SERVICE_TYPES.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
+                {loadingServices ? (
+                  <div className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 text-sm">
+                    Loading visa types...
+                  </div>
+                ) : (
+                  <select
+                    name="visa_type"
+                    value={formData.visa_type}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white"
+                    required
+                  >
+                    <option value="" disabled>Select a Visa Type</option>
+                    {serviceTypes.map(type => (
+                      <option key={type.id} value={type.name}>{type.name}</option>
+                    ))}
+                  </select>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Destination Country</label>
@@ -299,7 +351,7 @@ export default function NewApplication() {
                     name="destination_country"
                     value={formData.destination_country}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white"
                   >
                     <option value="UAE">UAE</option>
                     <option value="Saudi Arabia">Saudi Arabia</option>
@@ -325,6 +377,33 @@ export default function NewApplication() {
                 </div>
               </div>
             </div>
+
+            {/* Read-Only Required Documents Block */}
+            {selectedService?.requirements && selectedService.requirements.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Info className="h-4 w-4 text-blue-500" />
+                  Required Documents Checklist
+                </h3>
+                <div className="bg-blue-50/50 rounded-lg p-4 border border-blue-100">
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {selectedService.requirements.map((doc, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
+                        <CheckCircle className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                        <span className="leading-tight">
+                          {doc.title}
+                          {doc.optional && <span className="text-gray-400 italic ml-1">(Optional)</span>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-gray-500 mt-4 flex items-center gap-1.5">
+                    <AlertCircle className="h-3.5 w-3.5" />
+                    These documents are required for {selectedService.name} applications. You will upload them on the next screen.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Section 3: Additional Notes */}
@@ -417,7 +496,7 @@ export default function NewApplication() {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || loadingServices}
               className="flex items-center gap-2 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium transition disabled:opacity-50"
             >
               {loading ? (
