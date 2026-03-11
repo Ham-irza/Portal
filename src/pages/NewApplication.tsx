@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import Layout from '@/components/Layout';
 import { 
   ArrowLeft, Save, User, Mail, Phone, Globe, FileText, Calendar, 
-  AlertCircle, Plus, Trash2, Heart, MapPin, CheckCircle, Info
+  AlertCircle, Plus, Trash2, Heart, CheckCircle, Info
 } from 'lucide-react';
 
 interface CustomField {
@@ -24,7 +24,7 @@ interface ServiceType {
   key: string;
   name: string;
   description?: string;
-  requirements?: RequiredDocument[]; // The nested documents from your Django backend
+  requirements?: RequiredDocument[]; 
 }
 
 export default function NewApplication() {
@@ -33,10 +33,10 @@ export default function NewApplication() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  // New state for dynamic visa types
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
 
+  // Destination country removed from state entirely
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -47,15 +47,13 @@ export default function NewApplication() {
     date_of_birth: '',
     gender: 'M' as 'M' | 'F' | 'O',
     marital_status: 'single' as 'single' | 'married' | 'divorced' | 'widowed',
-    visa_type: '', // Starts empty, will be set when services load
-    destination_country: 'UAE',
+    visa_type: '', 
     travel_date: '',
     notes: ''
   });
 
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
 
-  // Fetch Service Types on component mount
   useEffect(() => {
     const fetchServices = async () => {
       try {
@@ -63,7 +61,6 @@ export default function NewApplication() {
         const servicesList = Array.isArray(res) ? res : ((res as any)?.results || []);
         setServiceTypes(servicesList);
         
-        // Auto-select the first visa type if available
         if (servicesList.length > 0) {
           setFormData(prev => ({ ...prev, visa_type: servicesList[0].name }));
         }
@@ -133,7 +130,7 @@ export default function NewApplication() {
         gender: formData.gender,
         marital_status: formData.marital_status,
         visa_type: formData.visa_type,
-        destination_country: formData.destination_country,
+        destination_country: 'China', // <--- Hardcoded here permanently
         travel_date: formData.travel_date || null,
         notes: formData.notes.trim() || '',
         status: 'new',
@@ -157,7 +154,6 @@ export default function NewApplication() {
     }
   };
 
-  // Find the currently selected service to display its requirements
   const selectedService = serviceTypes.find(s => s.name === formData.visa_type);
 
   return (
@@ -343,26 +339,9 @@ export default function NewApplication() {
                   </select>
                 )}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Destination Country</label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <select
-                    name="destination_country"
-                    value={formData.destination_country}
-                    onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white"
-                  >
-                    <option value="UAE">UAE</option>
-                    <option value="Saudi Arabia">Saudi Arabia</option>
-                    <option value="USA">USA</option>
-                    <option value="UK">UK</option>
-                    <option value="Canada">Canada</option>
-                    <option value="Australia">Australia</option>
-                    <option value="Schengen">Schengen Area</option>
-                  </select>
-                </div>
-              </div>
+              
+              {/* Destination Country UI Completely Removed */}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Expected Travel Date</label>
                 <div className="relative">
