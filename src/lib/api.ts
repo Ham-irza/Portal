@@ -36,7 +36,6 @@ export interface CommissionPayload {
   applicant: number;
   amount: number;
   currency?: string;
-  // UPDATE THIS LINE TOO
   status?: 'pending' | 'processing' | 'paid';
   paid_at?: string | null;
   payout_reference?: string;
@@ -46,6 +45,7 @@ export interface CommissionFilter {
   applicant?: number;
   status?: 'pending' | 'paid';
 }
+
 // Token management
 export const tokenService = {
   getAccessToken: (): string | null => {
@@ -207,8 +207,8 @@ class ApiClient {
   async getMe(): Promise<{
     id: number;
     email: string;
-    first_name?: string;  // Added
-    is_active?: boolean;  // Added
+    first_name?: string;
+    is_active?: boolean;
     is_staff: boolean;
     is_superuser: boolean;
     partner?: {
@@ -348,8 +348,8 @@ class ApiClient {
 
   async getDocumentRequirements(serviceKey?: string): Promise<any[]> {
     const url = serviceKey
-      ? `/api/documents/document-requirements/?service__key=${serviceKey}`
-      : '/api/documents/document-requirements/';
+      ? `/api/document-requirements/?service__key=${serviceKey}`
+      : '/api/document-requirements/';
     const data = await this.request(url);
     return Array.isArray(data) ? data : ((data as any)?.results || []);
   }
@@ -399,7 +399,6 @@ class ApiClient {
   // Commissions
   async getCommissions(): Promise<any[]> {
     const data = await this.request('/api/commissions/');
-    // Handle both direct array and paginated { results: [...] } responses
     return Array.isArray(data) ? data : ((data as any)?.results || []);
   }
 
@@ -441,13 +440,13 @@ class ApiClient {
       body: JSON.stringify({ body }),
     });
   }
+
   async getCommissionRules(): Promise<CommissionRule[]> {
     const data = await this.request('/api/commission-rules/');
-    // Handle both direct array and paginated { results: [...] } responses
     return Array.isArray(data) ? data : ((data as any)?.results || []);
   }
 
-  // Reports - Backend uses from_date/to_date, not start_date/end_date
+  // Reports
   async getPartnerReport(params?: {
     start_date?: string;
     end_date?: string;
@@ -550,7 +549,7 @@ class ApiClient {
     return this.request('/api/analytics/overview/');
   }
 
-  // Admin endpoints - Documents (all documents across all partners)
+  // Admin endpoints - Documents
   async getAllAdminDocuments(params?: {
     applicant?: number;
     document_type?: string;
@@ -577,10 +576,7 @@ class ApiClient {
     });
   }
 
-  
-  /**
-   * Create a new commission manually.
-   */
+  // Commissions
   async createCommission(data: CommissionPayload): Promise<Commission> {
     return this.request('/api/commissions/', {
       method: 'POST',
@@ -588,9 +584,6 @@ class ApiClient {
     });
   }
 
-  /**
-   * Update a commission (e.g., mark as paid, add reference).
-   */
   async updateCommission(id: number, data: Partial<CommissionPayload>): Promise<Commission> {
     return this.request(`/api/commissions/${id}/`, {
       method: 'PATCH',
@@ -598,9 +591,6 @@ class ApiClient {
     });
   }
 
-  /**
-   * Delete a commission record.
-   */
   async deleteCommission(id: number): Promise<void> {
     return this.request(`/api/commissions/${id}/`, {
       method: 'DELETE',
@@ -710,7 +700,6 @@ class ApiClient {
 
   // ============ DEALS API ============
   
-  // Get all deals (filtered by partner automatically)
   async getDeals(params?: {
     search?: string;
     status?: string;
@@ -730,12 +719,10 @@ class ApiClient {
     return this.request(url);
   }
 
-  // Get single deal
   async getDeal(id: number): Promise<any> {
     return this.request(`/api/deals/${id}/`);
   }
 
-  // Create a new deal
   async createDeal(data: {
     applicant: number;
     visa_type?: string;
@@ -750,7 +737,6 @@ class ApiClient {
     });
   }
 
-  // Update a deal (partial)
   async updateDeal(id: number, data: any): Promise<any> {
     return this.request(`/api/deals/${id}/`, {
       method: 'PATCH',
@@ -758,26 +744,21 @@ class ApiClient {
     });
   }
 
-  // Delete a deal
   async deleteDeal(id: number): Promise<void> {
     return this.request(`/api/deals/${id}/`, {
       method: 'DELETE',
     });
   }
 
-  // Get deal statistics
   async getDealStats(): Promise<any> {
     return this.request('/api/deals-stats/');
   }
 
-  // Get applicants for deal creation (partners can only see their own)
   async getApplicantsForDeal(): Promise<any[]> {
-    // Use the same endpoint but it filters by partner automatically
     const data = await this.request('/api/applicants/');
     return Array.isArray(data) ? data : ((data as any)?.results || []);
   }
 
-  // Deal Notes
   async getDealNotes(dealId: number): Promise<any[]> {
     const data = await this.request(`/api/deal-notes/?deal=${dealId}`);
     return Array.isArray(data) ? data : ((data as any)?.results || []);
@@ -791,7 +772,4 @@ class ApiClient {
   }
 }
 
-
-
 export const api = new ApiClient(API_BASE_URL);
-
