@@ -342,7 +342,7 @@ class ApiClient {
 
   // Service Types / Document Requirements
   async getServiceTypes(): Promise<any[]> {
-    const data = await this.request('/api/documents/service-types/');
+    const data = await this.request('/api/service-types/');
     return Array.isArray(data) ? data : ((data as any)?.results || []);
   }
 
